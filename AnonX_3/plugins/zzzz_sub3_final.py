@@ -34,10 +34,12 @@ import os
 from AnonX_3 import config, logger
 from AnonX_3.core.youtube import YouTube
 from AnonX_3.core.bot_api import BotAPI
+from AnonX_3.core.provider.po_token import PoTokenProvider
 from AnonX_3.helpers import Track
 
 _SENTINEL = "_anonx_sub3_final_critical_path_v1"
 _PROVIDER_KEYS = ("youtubepot-bgutilhttp", "youtubepot-bgutilscript")
+_DOWNLOAD_NO_POT_MARKER = "_anonx_disable_pot_for_download"
 
 
 def _enabled() -> bool:
@@ -178,12 +180,57 @@ def _install_quiet_stale_delete() -> None:
     setattr(BotAPI, sentinel, True)
 
 
+def _install_provider_download_bypass() -> None:
+    """Stop download retry code from re-injecting the broken POT sidecar."""
+    sentinel = "_anonx_download_pot_bypass_v1"
+    if getattr(PoTokenProvider, sentinel, False):
+        return
+
+    original_sync = PoTokenProvider.apply_to_ydl_opts_sync
+    original_async = PoTokenProvider.apply_to_ydl_opts
+
+    @staticmethod
+    def _consume_marker(opts: dict) -> tuple[dict, bool]:
+        out = dict(opts)
+        bypass = bool(out.pop(_DOWNLOAD_NO_POT_MARKER, False))
+        if bypass:
+            out = _strip_provider_opts(out)
+            out.pop("_anonx_pot_bypassed", None)
+        return out, bypass
+
+    def _sync(self: PoTokenProvider, opts: dict, *, video_id: str | None = None):
+        cleaned, bypass = _consume_marker(opts)
+        if bypass:
+            return cleaned
+        return original_sync(self, cleaned, video_id=video_id)
+
+    async def _async(
+        self: PoTokenProvider,
+        opts: dict,
+        *,
+        video_id: str | None = None,
+    ):
+        cleaned, bypass = _consume_marker(opts)
+        if bypass:
+            logger.debug(
+                "po_token download bypass video_id=%s reason=sub3_progressive_cache",
+                video_id or "",
+            )
+            return cleaned
+        return await original_async(self, cleaned, video_id=video_id)
+
+    PoTokenProvider.apply_to_ydl_opts_sync = _sync
+    PoTokenProvider.apply_to_ydl_opts = _async
+    setattr(PoTokenProvider, sentinel, True)
+
+
 def _install() -> None:
     if not _enabled() or getattr(YouTube, _SENTINEL, False):
         return
 
     _apply_runtime_defaults()
     _install_quiet_stale_delete()
+    _install_provider_download_bypass()
 
     original_pot_opts = YouTube._authoritative_pot_opts
     original_build_api = YouTube.build_ytdlp_api_opts
@@ -229,6 +276,9 @@ def _install() -> None:
         if action == "download":
             stripped = _strip_provider_opts(opts)
             stripped.pop("_anonx_pot_bypassed", None)
+            # download() may call po_token_provider.apply_to_ydl_opts() again on
+            # each retry. Carry a private marker until that hook consumes it.
+            stripped[_DOWNLOAD_NO_POT_MARKER] = True
             return stripped
         return opts
 
