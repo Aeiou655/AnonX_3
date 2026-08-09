@@ -37,3 +37,14 @@ def test_patch_is_guarded_and_audio_play_default_path_is_not_rebuilt():
     assert 'bool(getattr(media, "video", False))' in PATCH
     assert 'DIRECT_VPLAY_HYBRID_AUDIO_HANDOFF' in PATCH
     assert 'DIRECT_COLD_BINDING_RETRY' in PATCH
+
+
+def test_auto_proxy_is_explicitly_disabled_for_ytdlp_only():
+    assert '_anonx_ytdlp_auto_proxy_compat_bypass_v1' in PATCH
+    assert 'opts["proxy"] = ""' in PATCH
+    assert 'cleaned.extend(["--proxy", ""])' in PATCH
+    assert 'YOUTUBE_PROXY_MODE' in PATCH
+    assert '== "auto"' in PATCH
+    assert 'youtube_ytdlp_auto_proxy_bypass' in PATCH
+    assert 'search_proxy_retained=1' in PATCH
+    assert 'explicit_direct_override=1' in PATCH
