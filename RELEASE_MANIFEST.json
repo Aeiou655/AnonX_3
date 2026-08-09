@@ -1,0 +1,1422 @@
+{
+  "files": [
+    {
+      "path": ".dockerignore",
+      "sha256": "4371f316948e4ecee12059a692fbcca42a9760775a7d264d0a3f838180110e52",
+      "size": 323
+    },
+    {
+      "path": ".env",
+      "sha256": "03552d5bdc79662b782c8490da076f710c375362e1e800f55cbbd8447d84da59",
+      "size": 526
+    },
+    {
+      "path": ".github/AnonX.jpg",
+      "sha256": "b35e5e1bbfae0953d0c301e8607b3d642ae16e44df4228ded495bada964332fa",
+      "size": 54749
+    },
+    {
+      "path": ".github/CODEOWNERS",
+      "sha256": "3e29460cf80c84794f187eef45642889953b865264846fb34f60e8e43c066be3",
+      "size": 19
+    },
+    {
+      "path": ".github/README.md",
+      "sha256": "07072d9d0357a948a27ab5b71e8346213f66e797a925e2553c7c738d6b89dc7e",
+      "size": 4925
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "8ee2f970fdfc001c23630e0f512771a6115065e31a6cf3aa0d03fe8f9eebb44f",
+      "size": 323
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "66a967234c56521dc22dcdf4d003588c5810170cffd3e34b546f0dbbf3771cdb",
+      "size": 12363
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "sha256": "7de1ec31f264362dd488a46a2ffc5281117187b345edd198ad656314d6b6dcf6",
+      "size": 16018
+    },
+    {
+      "path": "AnonX_3/__init__.py",
+      "sha256": "3b6101fc580c8b00b2b0711759414e59eaa2573db3eb80e7b486f788312520f5",
+      "size": 16373
+    },
+    {
+      "path": "AnonX_3/__main__.py",
+      "sha256": "391b817b2fe39570c7656488086ee0ae5faed138b27d12f93b0b0718264658aa",
+      "size": 25142
+    },
+    {
+      "path": "AnonX_3/cookies/.gitkeep",
+      "sha256": "f5b32d1ba1531725ad7413cdb60fa8af4bc0ee4fab72f0ac4daa0e54afcdcc13",
+      "size": 68
+    },
+    {
+      "path": "AnonX_3/core/autoplay.py",
+      "sha256": "5e207c3c7182fb2ede6b6a04f94b2935e624138289383735761f6601a2d8c09e",
+      "size": 13539
+    },
+    {
+      "path": "AnonX_3/core/bot.py",
+      "sha256": "caa02f77f011c5cdc1f360625cfc934e6630afd28b403771abf3aece7e232605",
+      "size": 17126
+    },
+    {
+      "path": "AnonX_3/core/bot_api.py",
+      "sha256": "d50dc2cdb84a23cff243afb8c404e2e5124d2256cdf503f10ffe048025c1f599",
+      "size": 26616
+    },
+    {
+      "path": "AnonX_3/core/cache/.gitkeep",
+      "sha256": "d6b14a5d9c56a64bb198a5ffe82013d9c0ef13d354001d9f266841562d69f41a",
+      "size": 46
+    },
+    {
+      "path": "AnonX_3/core/cache/__init__.py",
+      "sha256": "321b7b6c001bbd127de2580a202cea3abcfb2acb4e7aee9dd1925adb71a63c39",
+      "size": 37
+    },
+    {
+      "path": "AnonX_3/core/calls.py",
+      "sha256": "b5c43911b718e6b453d65c34e5c6eced73b764e759ee69cc3dd9843299c28f2f",
+      "size": 329124
+    },
+    {
+      "path": "AnonX_3/core/cdn/__init__.py",
+      "sha256": "7b625077237d0cb45021c76c9051a314ff7859972e48aac230714610b7daa734",
+      "size": 378
+    },
+    {
+      "path": "AnonX_3/core/cdn/cleaner.py",
+      "sha256": "2a87fe2cb289e59b4b51f3162d82a84374d8b6da33c30b85e7c99bab443fc3e8",
+      "size": 8145
+    },
+    {
+      "path": "AnonX_3/core/cdn/manager.py",
+      "sha256": "f2f610907ad33296277dc2849483dd5b4c6b14006fda6f307d0c7ac67995e39b",
+      "size": 16442
+    },
+    {
+      "path": "AnonX_3/core/cdn/origin.py",
+      "sha256": "e4dcad358de2b883b275d96ffb4bda004444dd9ba917f59112df68a73af4da46",
+      "size": 3191
+    },
+    {
+      "path": "AnonX_3/core/cdn/publisher.py",
+      "sha256": "51004663fe21974f9bd345ab1b12c19567d2d0cc22fe300e0c754859373636d8",
+      "size": 2511
+    },
+    {
+      "path": "AnonX_3/core/cdn/store.py",
+      "sha256": "c1cbc14f59faa6f64220a8f818e68dd1e2a9e47764d38212a925b592252ac024",
+      "size": 23485
+    },
+    {
+      "path": "AnonX_3/core/cookie_watcher.py",
+      "sha256": "77df252f48a4235d86731877494d190b07b45da0ce3d1e2cc1bb8fa165900200",
+      "size": 12521
+    },
+    {
+      "path": "AnonX_3/core/deferred_status.py",
+      "sha256": "be1c4a3eacf231e31868663a39f1acf2449cbe7b733e91b808189d8fb2ad7b45",
+      "size": 5280
+    },
+    {
+      "path": "AnonX_3/core/dir.py",
+      "sha256": "ca1f1e319f55eeab37a892d1ac760f214010137c1f822a2b92c347ef4deac590",
+      "size": 2461
+    },
+    {
+      "path": "AnonX_3/core/downloader/__init__.py",
+      "sha256": "60176e853b7a699865c61dfa2a2fd739bfca0c78c6c5f7e41991a389e64b4d73",
+      "size": 398
+    },
+    {
+      "path": "AnonX_3/core/downloader/redis_singleflight.py",
+      "sha256": "792872b5e9a0f4bdc3de9c67d66a28d2464193f0ceb6c7771edc0978bef97a31",
+      "size": 10263
+    },
+    {
+      "path": "AnonX_3/core/downloader/singleflight.py",
+      "sha256": "0ae08e490cb81010084c03674c96e56bf10c3db7e544718cd52a8bf7a0753a43",
+      "size": 8510
+    },
+    {
+      "path": "AnonX_3/core/downloader/validation.py",
+      "sha256": "d3d0c45d9f4502af82781aafa68a7bd28eda9d189eba3cae1dcec73a410f531e",
+      "size": 4471
+    },
+    {
+      "path": "AnonX_3/core/dynamic_capacity.py",
+      "sha256": "7b9011ac0f495e091601c79e8789aa02e2174f2347f0554cb52c58ca49ae5afe",
+      "size": 50989
+    },
+    {
+      "path": "AnonX_3/core/error_monitor.py",
+      "sha256": "516238a50385687a34201b56db4637037ff2522092f275d3d24b42afb8307906",
+      "size": 23230
+    },
+    {
+      "path": "AnonX_3/core/facebook.py",
+      "sha256": "2f3ce06ac9c3f02cd42b2c21aeac95f695848e62a46d6ca739d05a499efddd11",
+      "size": 17483
+    },
+    {
+      "path": "AnonX_3/core/ffmpeg_observer.py",
+      "sha256": "051565b0dce3924af5bccd7e99aa138fd6ac1a8948f9632d52067476f8442710",
+      "size": 7680
+    },
+    {
+      "path": "AnonX_3/core/health.py",
+      "sha256": "e50b41c4f2aa3a35e5c992bf8316be8087e0d5e5080b200b46355eeef0a3bdeb",
+      "size": 8761
+    },
+    {
+      "path": "AnonX_3/core/lang.py",
+      "sha256": "1dd9ee6e8af24efa7c0d67306146ded681c334ac54d1c880e17f8ebd538e0eab",
+      "size": 4900
+    },
+    {
+      "path": "AnonX_3/core/lifecycle.py",
+      "sha256": "5124b975bec1dfdd889e1bc8613a83da964c2ebdd0a680fbe10e74e8e6db953e",
+      "size": 19593
+    },
+    {
+      "path": "AnonX_3/core/metrics.py",
+      "sha256": "d256994cb92af6fdcc790b6c511932b711d89938c639c827dd6283e95674b84e",
+      "size": 6653
+    },
+    {
+      "path": "AnonX_3/core/mongo.py",
+      "sha256": "e53942e29610056f3942d4cc7374a513dbe2db760647b9e1470bd053359cc5b9",
+      "size": 82212
+    },
+    {
+      "path": "AnonX_3/core/netbind.py",
+      "sha256": "13306aa2c6feb2932874e07fb990d424dd95018c04b57d687217904e0691a4ef",
+      "size": 5506
+    },
+    {
+      "path": "AnonX_3/core/performance.py",
+      "sha256": "570add74f153ed06b5a1210d32bc383d571af4885ccc933b3214329c1ddbd968",
+      "size": 1898
+    },
+    {
+      "path": "AnonX_3/core/playback.py",
+      "sha256": "1823c248d53406f27729be0c17530162ed02c0c130517b2a18ad58d549140743",
+      "size": 9811
+    },
+    {
+      "path": "AnonX_3/core/playback_orchestrator.py",
+      "sha256": "aab7276335561e0568d62fe939b4e94dcd49440d24657a56f25e5b9223dbf0a5",
+      "size": 20150
+    },
+    {
+      "path": "AnonX_3/core/prefetch.py",
+      "sha256": "a78f044fb84a65201035f7d262bd5877a93a9b3441b8f04d08363146d5cce331",
+      "size": 31451
+    },
+    {
+      "path": "AnonX_3/core/provider/__init__.py",
+      "sha256": "d1a33333a3a24f5b0526cd7f8bf18bce99a3bcb88fd33645e7b58cb535d65095",
+      "size": 209
+    },
+    {
+      "path": "AnonX_3/core/provider/po_token.py",
+      "sha256": "5894fdd58a5ef28f156915424ee5bee8c3d2fd15aadce4b7ccd57a7eeab0fcb8",
+      "size": 6127
+    },
+    {
+      "path": "AnonX_3/core/request_context.py",
+      "sha256": "49cc6db838542c30565a5ebc1c95ef8f824f392f5159969c47c9c75905eb9bb1",
+      "size": 2491
+    },
+    {
+      "path": "AnonX_3/core/resolver/__init__.py",
+      "sha256": "812f6e02c7004250002341a0f3b115aab92a1a4ce35b0924cb2cd13bea480fda",
+      "size": 924
+    },
+    {
+      "path": "AnonX_3/core/resolver/error_classifier.py",
+      "sha256": "334a503318792a6bc8174ae18e4846fe9ad7ad8d04e96c02d389537b52e7b975",
+      "size": 6164
+    },
+    {
+      "path": "AnonX_3/core/resolver/fallback.py",
+      "sha256": "f3c17643deaff65baacedb9e885b8c2467e0a91b2bdee3a5cf6f1e666f29a673",
+      "size": 11935
+    },
+    {
+      "path": "AnonX_3/core/resolver/matcher.py",
+      "sha256": "e21b25a18e0385552c9829b46bd08db0e368d7d8601620c51e453ec9dedc1f1d",
+      "size": 7223
+    },
+    {
+      "path": "AnonX_3/core/resolver/player_response.py",
+      "sha256": "081b74cc4d17cf888420a1da6498d3339c8e975d743fe5591712afd279842a28",
+      "size": 4363
+    },
+    {
+      "path": "AnonX_3/core/resolver/retry.py",
+      "sha256": "a342a87e261fa4c59d9e0495e82235007a8e5417ca9a5f4fe78d6e6226759d73",
+      "size": 3025
+    },
+    {
+      "path": "AnonX_3/core/resolver/soundcloud.py",
+      "sha256": "0e979c9321d05efe0ed8d92a3146e52ea9971ff6ea1d619e4a18c6f7b60e751b",
+      "size": 24318
+    },
+    {
+      "path": "AnonX_3/core/resolver/youtube_clients.py",
+      "sha256": "425ea373a7825adea2020c533bc2286dd032b2ee46734d6416766382f8b4dae4",
+      "size": 2418
+    },
+    {
+      "path": "AnonX_3/core/resource_budget.py",
+      "sha256": "fc1c66fc8711a6e41946732a9e4e28733c8e9f3beaa2b7587fa7c976437aed99",
+      "size": 3049
+    },
+    {
+      "path": "AnonX_3/core/resource_manager.py",
+      "sha256": "53bc29dd905d328081b6a738f9c124bff0bbab08eb0d7b941d52b85c10d65628",
+      "size": 21325
+    },
+    {
+      "path": "AnonX_3/core/security.py",
+      "sha256": "f2454a3e709b0534a2cd944810df0e028e1516151d534c91b31b06608a2181ed",
+      "size": 3749
+    },
+    {
+      "path": "AnonX_3/core/social_urls.py",
+      "sha256": "9ca3cc25ea699238dcb850b3a6e090c15727075470e66a8b41c6573a7b17d33b",
+      "size": 18128
+    },
+    {
+      "path": "AnonX_3/core/source_health.py",
+      "sha256": "fa9540e20a4df7fa92eeddc8a80d7d9690f50e7340a328621500a3dd4175aaa0",
+      "size": 4676
+    },
+    {
+      "path": "AnonX_3/core/stream_profile.py",
+      "sha256": "3fd86c8b9ca11669b8144adf3538e1de070ccec3477e32fcd4b8bd64b8d6ed6a",
+      "size": 10137
+    },
+    {
+      "path": "AnonX_3/core/stream_watch.py",
+      "sha256": "4f556b6c9eb8904c36052d94cedeadcd13ad87fbcdb2a788846b969d003318c3",
+      "size": 4672
+    },
+    {
+      "path": "AnonX_3/core/supervisor.py",
+      "sha256": "b36eae1ab9355b7fc69c2131bc42855da96bd96c53ffd973d5493796704851f5",
+      "size": 6019
+    },
+    {
+      "path": "AnonX_3/core/telegram.py",
+      "sha256": "65a2afcb6fc87408542b77a1fbe6a15fc442d0c0fc45433fbd3f9ed89049669b",
+      "size": 42996
+    },
+    {
+      "path": "AnonX_3/core/tiktok.py",
+      "sha256": "29fa5b783b6a0b57c3bf46ab684701f1ccfa918222dea615390acfee381aa419",
+      "size": 21485
+    },
+    {
+      "path": "AnonX_3/core/transition_policy.py",
+      "sha256": "82398fb8729e79c8e71febb65418893a6a45a48fcbe1f1e69574b2a5de59e307",
+      "size": 1248
+    },
+    {
+      "path": "AnonX_3/core/userbot.py",
+      "sha256": "39be1c09788b2253d9142d27590b2f2c43baa263cd3fb39b8f58f6dd92c5fee8",
+      "size": 8251
+    },
+    {
+      "path": "AnonX_3/core/youtube.py",
+      "sha256": "f7fe261e29bc7d111a6d1d09ec63e67a14198e98dc1325e134f29019c9304ee6",
+      "size": 289803
+    },
+    {
+      "path": "AnonX_3/core/ytdlp_runtime.py",
+      "sha256": "209fbb9f62ffac23067ade9eecce318808fb8c90c4b975bf398775653eabb1b3",
+      "size": 1436
+    },
+    {
+      "path": "AnonX_3/downloader_api/__init__.py",
+      "sha256": "6332545c7d0a94c1af36e73e65fddca09ac521337818b591450777e35026e169",
+      "size": 101
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/__init__.py",
+      "sha256": "b782d6d76b6f691c8750893b2a0913053b247b8dac237edee714855a30bb4a37",
+      "size": 94
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/router.py",
+      "sha256": "c1a0e54a88da3ba7a6ac06d37b0269176349a18884f66c266abb73a535ad605a",
+      "size": 572
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/__init__.py",
+      "sha256": "c554c2f04cfd6b2df237bae14d026c48b858bcbdf022a23b2b47c2370792d0b7",
+      "size": 21
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/admin.py",
+      "sha256": "bfa4d26329dee11e09b4ba0d96312243a1df1c6af5e1e232de542ef76cd52b27",
+      "size": 3972
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/cache.py",
+      "sha256": "b368a3ad1edd2d4804c4afbd62ffb7b698907d1a2745f273e4cda43f0fc8b28c",
+      "size": 686
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/download.py",
+      "sha256": "5cdc8b0cedc6301abe96b48eace2a764bc9d562068524e88da1ab89014d07b75",
+      "size": 6992
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/health.py",
+      "sha256": "1ff41d2e7ac1c77d23255a062151fafbc085de749075a069ea65204ec69a84ba",
+      "size": 2435
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/jobs.py",
+      "sha256": "ee8379aeff810a1920ec2a5db86648e5e4e9a136908ce8bb860426718c3818e9",
+      "size": 3929
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/metadata.py",
+      "sha256": "48d1d4048a9dd5550ecbbaafaba0507eef5800a6a8733f487956e42b39d1e3e3",
+      "size": 3265
+    },
+    {
+      "path": "AnonX_3/downloader_api/api/v1/metrics.py",
+      "sha256": "f4040405c431b7a4335614a0fe7256b5cf90ca4f3fd1b09aa46bf2663f7941d6",
+      "size": 2071
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/__init__.py",
+      "sha256": "e1b0779468bb3bd8f267b5563d908271a1d52fb23a7bef64d99f269de378483f",
+      "size": 205
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/config.py",
+      "sha256": "b61d87ee036bee6712b8a79347f4127587790e58a34e015577ffb63605660c9b",
+      "size": 4852
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/constants.py",
+      "sha256": "f05cf9f22c3003af9c1b7fdc5138f1e316ef81a61319d07697f010d401651c9f",
+      "size": 3413
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/dependencies.py",
+      "sha256": "f5b9ca1630541414174eeedea7f08312c0903e0853720100800949d6a018aa7e",
+      "size": 1525
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/error_handlers.py",
+      "sha256": "36c274b6afa7a218feaa34219218cac689b94eb4895020e9d0197e3192e51351",
+      "size": 2322
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/exceptions.py",
+      "sha256": "0e0986b58e8f33579a1dd5fdd81a7a574ffe101502b9544c51d7b77135883921",
+      "size": 5741
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/logging_config.py",
+      "sha256": "739a120984a787e124f1cc8a23ea0350785f39c12c663286bf384e5be977a3a0",
+      "size": 3851
+    },
+    {
+      "path": "AnonX_3/downloader_api/core/security.py",
+      "sha256": "997d8e550db34eeaffdffd48729922edb64f5020fe946bcea8058ea4a75229dd",
+      "size": 1350
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/__init__.py",
+      "sha256": "7749a949999540ed2840e023f8e85926853b40e08a7921f53a31a364c708d376",
+      "size": 314
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/engine.py",
+      "sha256": "33b952f118f0f397f610f5acc88e6b7b44c6adbde2c06bc73b6f93765512136f",
+      "size": 11256
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/extractor.py",
+      "sha256": "9bab2ed60516b5414f344a0ce7f5f76b6fd0e09d12b92be5bcff01a5b8a913c6",
+      "size": 3790
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/fallback_policy.py",
+      "sha256": "3a2874b459bb8bbb2f56d468443ddcffdf1e60d5420ceefee6204fda5d1427f6",
+      "size": 5265
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/format_selector.py",
+      "sha256": "46a01ee71bdade0a94d1425d3bf6c71ba3ae0ac65e26d7abebf6749132b4ab10",
+      "size": 8277
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/progress_hook.py",
+      "sha256": "61ae580a115ffa751503c964847e9638e2661523849d7496b21a46b71dcbe6a6",
+      "size": 4404
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/result_parser.py",
+      "sha256": "b12035df95ff9465787c4393a5e7f30d7b05c107595020e9dfc5f857a678d92c",
+      "size": 2788
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/retry_policy.py",
+      "sha256": "65fb7c23760b49ebdb48be0892bf3dbbb05fe502dc9d313ae36595a356943a8a",
+      "size": 3366
+    },
+    {
+      "path": "AnonX_3/downloader_api/downloader/yt_dlp_options.py",
+      "sha256": "d4d180b60bcd624ef8b73e33bb438db1add6f77b8866c492167c335151d06866",
+      "size": 3923
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/__init__.py",
+      "sha256": "bc394c88ecfcc805b059a5585b8005f9e4e49f68ae941a27ced6e7e3c6a71f27",
+      "size": 621
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/bandwidth_manager.py",
+      "sha256": "2293517dbc1b6198b8ee20a8bc276f922db16ed3bb36cbdf91f8456877f75695",
+      "size": 771
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/concurrency_manager.py",
+      "sha256": "51a63b3bb968cabe14fccba2578aad1e6a677d99a1d6204b298e2b318070f0e1",
+      "size": 4104
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/decision_engine.py",
+      "sha256": "4fbf2ca3dfac63f1568d21cfca26718835e217bf537d716c3bc557dbaff40679",
+      "size": 6551
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/disk_guard.py",
+      "sha256": "916695685b85307ff7a02b3e9e5495014b3af9da9c1dea64fe31cde2505f179d",
+      "size": 1781
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/load_policy.py",
+      "sha256": "62add10ba95b647981e34ad26dfeb456ef354c4e017af70f460a80259471a81b",
+      "size": 3210
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/quality_manager.py",
+      "sha256": "27a7f3bf8ff8cb99ca3539cf9bd1ff72f02e013560505432a2ca3c62e9850c7d",
+      "size": 2983
+    },
+    {
+      "path": "AnonX_3/downloader_api/dynamic/resource_monitor.py",
+      "sha256": "f05623bfafd9c7533d5965ba1e1f84f253adcda0d5e3ac5ab86062b71d4d8d45",
+      "size": 5060
+    },
+    {
+      "path": "AnonX_3/downloader_api/lifespan.py",
+      "sha256": "bb695d7236364eefdc2ca6d887823254461ec793b5f9ce59d6f4c7f8063bd5e8",
+      "size": 1794
+    },
+    {
+      "path": "AnonX_3/downloader_api/main.py",
+      "sha256": "1a98a22de6ac16ff487b8d61050f5556f6a9192b8e32542b8673e1eee0346156",
+      "size": 1677
+    },
+    {
+      "path": "AnonX_3/downloader_api/monitoring/__init__.py",
+      "sha256": "97d268d9ab5275bbc642c5aacfa29ff605fc9b03bb5939fe3be888a6b9c67bb0",
+      "size": 314
+    },
+    {
+      "path": "AnonX_3/downloader_api/monitoring/alerts.py",
+      "sha256": "0434f194eb0c78a78099d9467587e39a57c8c0a862fb7ac6ce49cf385ed7af86",
+      "size": 2260
+    },
+    {
+      "path": "AnonX_3/downloader_api/monitoring/audit_logger.py",
+      "sha256": "acef0ceba76759c78ae55155506ec85b251162ba07e40e327b64c285a601468f",
+      "size": 1753
+    },
+    {
+      "path": "AnonX_3/downloader_api/monitoring/event_logger.py",
+      "sha256": "e29633e6e9f2a623866c57dbdaeb379c3bf382a7824bf34ddca9feb8635c4976",
+      "size": 2307
+    },
+    {
+      "path": "AnonX_3/downloader_api/monitoring/health_monitor.py",
+      "sha256": "c01dfb224734b28e2ffd9628712b62ab7e9ca410d24a424d827c0b53d0dc2224",
+      "size": 5323
+    },
+    {
+      "path": "AnonX_3/downloader_api/monitoring/metrics.py",
+      "sha256": "ed943246aa669a12794220be94466d2986d0182f82594fd20160fc5fff7e09ca",
+      "size": 3989
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/__init__.py",
+      "sha256": "2ee3611ba33170c5cbc4c359a63e62ca1b457181fb8ba985a549dea9d9750587",
+      "size": 314
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/audio_processor.py",
+      "sha256": "b10695a0a6eff1dd1082b539f19f6fd20663c2fa4f70d2233f11283f47f947c4",
+      "size": 4182
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/converter.py",
+      "sha256": "18a96236abd8707b95a9d0babccfec0b9d0eeaab53cce19c59d22bac4cf17a54",
+      "size": 2424
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/ffmpeg_manager.py",
+      "sha256": "bd4c9324b9c8cecba6751288b8a1a9a4c942e262870a8bdf25152b54ef4c9ccf",
+      "size": 7795
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/ffprobe_manager.py",
+      "sha256": "1bbc24bad3cb57a7650f35acfc068f57dd1486d23c87f343af407cc49806c15d",
+      "size": 5475
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/remuxer.py",
+      "sha256": "da8c8f1aab24c5ffc74d10ea282a00467e77912b0df2e3d44ba832c091c54fab",
+      "size": 1031
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/validator.py",
+      "sha256": "c24eb8352cd4900441249bb41143d5404dd1f1fc0f1319116cd58cb040de7de8",
+      "size": 5245
+    },
+    {
+      "path": "AnonX_3/downloader_api/processing/video_processor.py",
+      "sha256": "018f0160fb47b238797e98c653a270af2a87d0a266a797133bbbaccb2b180a54",
+      "size": 4480
+    },
+    {
+      "path": "AnonX_3/downloader_api/queue/__init__.py",
+      "sha256": "c87eabb8d5abb09eb98131e76f90b00bd16ec959a53cded760914baf9c1e52bb",
+      "size": 320
+    },
+    {
+      "path": "AnonX_3/downloader_api/queue/job_manager.py",
+      "sha256": "d6d76af1855ed53356f7a7b34f2b05c84315c98618678277261e601b2e2acdef",
+      "size": 5144
+    },
+    {
+      "path": "AnonX_3/downloader_api/queue/job_states.py",
+      "sha256": "52c155b83a6a457d349d24ac4b802e8a33109af6dbb0e3b3b5eb9fb6db002f8c",
+      "size": 2147
+    },
+    {
+      "path": "AnonX_3/downloader_api/queue/priority_queue.py",
+      "sha256": "17466aee7336d24da69715ea16273f2d3586aa250ae0bf2ace4b550a7f7a8ff8",
+      "size": 3108
+    },
+    {
+      "path": "AnonX_3/downloader_api/queue/queue_manager.py",
+      "sha256": "52e274a7f5b0864093de3fd927ddb66fb8cfe5d8055fe29d55c0734a990e86fb",
+      "size": 6721
+    },
+    {
+      "path": "AnonX_3/downloader_api/queue/scheduler.py",
+      "sha256": "ecfe9f87123da98c48015e369f98b86d6d1c4d661c8421b451a3c845823fe2c3",
+      "size": 1838
+    },
+    {
+      "path": "AnonX_3/downloader_api/queue/worker.py",
+      "sha256": "7b29f001407b5db8ed04f5b9ed5afd9499c7499acd797073447bd2049755eec6",
+      "size": 7871
+    },
+    {
+      "path": "AnonX_3/downloader_api/schemas/__init__.py",
+      "sha256": "ec14d08ddfa2e327e2c288dc05a1406f18a2f01542861215949bef38f11794f8",
+      "size": 336
+    },
+    {
+      "path": "AnonX_3/downloader_api/schemas/cache.py",
+      "sha256": "18332ac1c62741f5a57046625ea2cb86821367c271d7bf86e26306bb7126bb4a",
+      "size": 1487
+    },
+    {
+      "path": "AnonX_3/downloader_api/schemas/download.py",
+      "sha256": "26a34d48a29bbc9f5017abfb45e8436a23bff66359c8e28b07162e876fd98e43",
+      "size": 1677
+    },
+    {
+      "path": "AnonX_3/downloader_api/schemas/error.py",
+      "sha256": "41cebdb19ebb50b5e7796a10547f645612692c6b46d1da6ddfecf90e35bb8911",
+      "size": 317
+    },
+    {
+      "path": "AnonX_3/downloader_api/schemas/health.py",
+      "sha256": "2246858ace11c0c4cdfd4665e837bf9369ce35f0c405077b0c64c84e9ab09cbc",
+      "size": 2075
+    },
+    {
+      "path": "AnonX_3/downloader_api/schemas/job.py",
+      "sha256": "f5e38cb045cc9830823fe87741f6c84a3c0900ff1110e7ba4a1dcbd07290970e",
+      "size": 3032
+    },
+    {
+      "path": "AnonX_3/downloader_api/schemas/metadata.py",
+      "sha256": "47852c47d2a0b84dff29521822046e1b60818ad4e4106c868e6967deec1f342e",
+      "size": 1778
+    },
+    {
+      "path": "AnonX_3/downloader_api/security/__init__.py",
+      "sha256": "37c426636b58ba20a9090a85785c9c8ab3afbbed29e44a2c8366a1481adeab78",
+      "size": 403
+    },
+    {
+      "path": "AnonX_3/downloader_api/security/api_key.py",
+      "sha256": "0aa7b0b5ef641e0219d046faec096c4378440c70eeb56e0cb6fc85ce68b101dd",
+      "size": 1350
+    },
+    {
+      "path": "AnonX_3/downloader_api/security/ip_filter.py",
+      "sha256": "12ef70e0d5c8628a4ec368d9c3b4c2a08118a2a93f3fcd99c6e38c2316d4e309",
+      "size": 1354
+    },
+    {
+      "path": "AnonX_3/downloader_api/security/rate_limiter.py",
+      "sha256": "95571fe1756a1843ca8143784cb0b0e61d3a93b9adf177c6064347a530b7e640",
+      "size": 3411
+    },
+    {
+      "path": "AnonX_3/downloader_api/security/request_limits.py",
+      "sha256": "8bda941685eb978de29b9d88d5ded74d1aefc76a4ce2fff588987dcb22b63150",
+      "size": 1944
+    },
+    {
+      "path": "AnonX_3/downloader_api/security/url_guard.py",
+      "sha256": "2a212290d30f12d4c9b09970a9b59f5d957b6893ac778d6d894167229e03e97d",
+      "size": 3023
+    },
+    {
+      "path": "AnonX_3/downloader_api/storage/__init__.py",
+      "sha256": "09778dcffeac11523718f2247830b50ffd2994b15e1eef6e984ad94769518f04",
+      "size": 363
+    },
+    {
+      "path": "AnonX_3/downloader_api/storage/database.py",
+      "sha256": "72d1d3e23f78317323cdce4cc04967b5267eba1878c2bc03c85181f6287af3b1",
+      "size": 12091
+    },
+    {
+      "path": "AnonX_3/downloader_api/storage/file_manager.py",
+      "sha256": "ddd42e3ce77b41f107c58d7befeb7ecdd87336fc5b26970020ce49bd00f4bc32",
+      "size": 4558
+    },
+    {
+      "path": "AnonX_3/downloader_api/storage/metadata_store.py",
+      "sha256": "dc453376f63d11ad6682edda8ac73af0f5c1039a0043a905074717a0391781f6",
+      "size": 3003
+    },
+    {
+      "path": "AnonX_3/downloader_api/storage/models.py",
+      "sha256": "6370f18cffeb3f6618b7778212aa2994cdb5278b15eea009a62166aeb31c72ad",
+      "size": 63
+    },
+    {
+      "path": "AnonX_3/downloader_api/storage/path_manager.py",
+      "sha256": "748e19b14fbcd68c6534b623d9aa97a53b03214e083f96a375d138187627ad89",
+      "size": 3408
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/__init__.py",
+      "sha256": "155f39ca607b52d316e31024c54d4a66a85c28e2b2eb789f7ebd7b33e98a37e0",
+      "size": 377
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/disk.py",
+      "sha256": "2adfa70a2f37022011a6a6ad8850fc0a90cd4062f39736a584472d64a8ee6929",
+      "size": 1997
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/duration.py",
+      "sha256": "5ace9d98a4ff8794247f5c10f88eddcf0c436317057216c1db7e91a4c7edaadc",
+      "size": 1128
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/filename.py",
+      "sha256": "a5d0b14f35b62b72d09b6519d03b608bec44f9843d42a0e30b610eb07fe077ef",
+      "size": 1928
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/hashing.py",
+      "sha256": "4253acd121cf3bb2ceca740b229113655296c77d637180dd0322cac6302c8cb7",
+      "size": 1317
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/mime.py",
+      "sha256": "596b4c0b0ec3c3d082171cc8452412cabd5be939892f6e8fbc13226e5f29af8b",
+      "size": 1406
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/time.py",
+      "sha256": "1a5cffb21ae9c591ad3b4222b648fb6ff0ae11306f65b3ccdb569337a8368caa",
+      "size": 1674
+    },
+    {
+      "path": "AnonX_3/downloader_api/utils/url_parser.py",
+      "sha256": "fca12f9748543048f712f257902f425cdca5d7b541fd08903f278197219b9201",
+      "size": 3806
+    },
+    {
+      "path": "AnonX_3/helpers/Inter-Light.ttf",
+      "sha256": "164414f0aacbe98a7e64addc43f7b3bfd2e32f7b90e101feeab227f14c371bda",
+      "size": 412844
+    },
+    {
+      "path": "AnonX_3/helpers/Raleway-Bold.ttf",
+      "sha256": "2cb35ce1a08cfbff367f8f4d7960fe7754abc0460f0f4d7ac46d3af924a9d0f3",
+      "size": 128248
+    },
+    {
+      "path": "AnonX_3/helpers/__init__.py",
+      "sha256": "f5806c53b6822d40f76ddb6b33e331ee58a22fd4941093271747b212b078f35f",
+      "size": 410
+    },
+    {
+      "path": "AnonX_3/helpers/_admins.py",
+      "sha256": "020db331d634010f5345676a00a694ca01f612c258a15ba3aa0307320df9811c",
+      "size": 3855
+    },
+    {
+      "path": "AnonX_3/helpers/_dataclass.py",
+      "sha256": "fc0e59f8d95ba1243f83c718a0efffc7110bd3825246f9c97fb7a88027cb5f23",
+      "size": 2260
+    },
+    {
+      "path": "AnonX_3/helpers/_inline.py",
+      "sha256": "bd4a772d9681cc4ba66ebe5a2d7d50e6f0454149e13def0d415b2fe548ff3d40",
+      "size": 23062
+    },
+    {
+      "path": "AnonX_3/helpers/_play.py",
+      "sha256": "ef52e4616b985b903b01a9dc6486bb2f6327c12f9096c7c7569229e02bcb58f8",
+      "size": 80539
+    },
+    {
+      "path": "AnonX_3/helpers/_queue.py",
+      "sha256": "609e8825ac989ba359eece2df3854727bbbd2390f02767eef9ed56b576135929",
+      "size": 3874
+    },
+    {
+      "path": "AnonX_3/helpers/_thumbnails.py",
+      "sha256": "56bbab46916a787c125d739284c726df557162381d21beff8a008678a6c0d0fe",
+      "size": 33958
+    },
+    {
+      "path": "AnonX_3/helpers/_utilities.py",
+      "sha256": "385a8761850bff93f2a4e4eb8d3156faf82aa5ab58f5177aacad78d549ba9af2",
+      "size": 85193
+    },
+    {
+      "path": "AnonX_3/helpers/fonts/Pyidaungsu-Bold.ttf",
+      "sha256": "6fd7f1d3f70c5cb9f663d46d7a940e18c2e9247acbed70ac8612239621586d8b",
+      "size": 234480
+    },
+    {
+      "path": "AnonX_3/helpers/fonts/Pyidaungsu-Regular.ttf",
+      "sha256": "df7106c15da76f6a24c10821b43da51f54961f6bc6791fb1fcf21c6c60bb2e10",
+      "size": 189468
+    },
+    {
+      "path": "AnonX_3/helpers/fonts/README.md",
+      "sha256": "708f9fb04870c9ca6b26db952e527ca22a09f8e89b1896dc8cfb40088c49582c",
+      "size": 634
+    },
+    {
+      "path": "AnonX_3/locales/README.md",
+      "sha256": "25cd27fa42f417e4521656aac1ef251119c6e3511c0b9e2fe9cc4ac9f28538b5",
+      "size": 3056
+    },
+    {
+      "path": "AnonX_3/locales/ar.json",
+      "sha256": "f8afc9fd1ecd01245adc81d5a029ada7afa95b2b22515eedc5423928c0df131a",
+      "size": 22733
+    },
+    {
+      "path": "AnonX_3/locales/de.json",
+      "sha256": "4c238373049e31769f9e0cfb4dc8e66be2af529e1c0d0435b6ac08bcd0752680",
+      "size": 19264
+    },
+    {
+      "path": "AnonX_3/locales/en.json",
+      "sha256": "de11f47ae30e2fa95706d8e8b31c23275bbc2840923800e87ab6df07dcb6973b",
+      "size": 33274
+    },
+    {
+      "path": "AnonX_3/locales/es.json",
+      "sha256": "6fdc5bd4f161943bf8f4f3a5c62b16041950f5fb37ebec37db221cb13dbc7b74",
+      "size": 19016
+    },
+    {
+      "path": "AnonX_3/locales/fr.json",
+      "sha256": "e32d33f6d593cff916ca62c9ac86b4d76ccc010497a162232987683c93cba209",
+      "size": 19537
+    },
+    {
+      "path": "AnonX_3/locales/hi.json",
+      "sha256": "8fd532c32546e04a64fbd37f8deba639a874797bcee12ab7039bdff380e2b03b",
+      "size": 30599
+    },
+    {
+      "path": "AnonX_3/locales/ja.json",
+      "sha256": "6f57024f820f1b8fa46502519bf9e8661cdcc9d17b4fbbf15812e302139946d1",
+      "size": 22283
+    },
+    {
+      "path": "AnonX_3/locales/my.json",
+      "sha256": "78c95f7fb6fd651d0ecaed933d69bc79d86f2d18ff35aefe645392400610183b",
+      "size": 53640
+    },
+    {
+      "path": "AnonX_3/locales/pa.json",
+      "sha256": "e3d090c1df9f30e5f801e65c0f8b7a52073513bfb46ac313b97641cb05235262",
+      "size": 30284
+    },
+    {
+      "path": "AnonX_3/locales/pt.json",
+      "sha256": "0a6935fa2d3ff367e5a7f408303338c3e875cb3a0a7990c7d2c13ab358cb285c",
+      "size": 18692
+    },
+    {
+      "path": "AnonX_3/locales/ru.json",
+      "sha256": "3d4d5eeb39fdd458937b292835407f9be5c404205babe1a9de862ddaf93efbbe",
+      "size": 25614
+    },
+    {
+      "path": "AnonX_3/locales/tr.json",
+      "sha256": "b5c6dd3835b2263130aa3cb541436266a83e9fc2b088eff73a5786db4ff07458",
+      "size": 18926
+    },
+    {
+      "path": "AnonX_3/locales/zh.json",
+      "sha256": "477965f94eafde2c8f5cb2afe6f16f7ce5499f45bc9871991dab64c7fe971986",
+      "size": 17473
+    },
+    {
+      "path": "AnonX_3/plugins/__init__.py",
+      "sha256": "de262648274bf25f630ce2a3233ba446dc8e212bf48db96828a541ab2d45d950",
+      "size": 599
+    },
+    {
+      "path": "AnonX_3/plugins/active.py",
+      "sha256": "10a42ab6ad585aa508dec48713c805ac9de4817fcd694e2bbd99d260990c0cd7",
+      "size": 5326
+    },
+    {
+      "path": "AnonX_3/plugins/afk.py",
+      "sha256": "802c9a70d754eb812fa2c19699d08d6d3845f18de6daa6411d3ac6ebe50c634b",
+      "size": 3773
+    },
+    {
+      "path": "AnonX_3/plugins/auth.py",
+      "sha256": "8e87aa05001d9e86f007ad401a416dc8a24c767444bb43ef722b88976b9ca2f1",
+      "size": 1959
+    },
+    {
+      "path": "AnonX_3/plugins/auto_react.py",
+      "sha256": "4dd576477b6e0886865a34ea840a988619ccd41a499cc1638fda32caa82e1192",
+      "size": 3396
+    },
+    {
+      "path": "AnonX_3/plugins/auto_reply.py",
+      "sha256": "0f5329a6a87b8b9b5f42e9600ace358eac226c3fb6b4cf36323e4fa67b8011bb",
+      "size": 45890
+    },
+    {
+      "path": "AnonX_3/plugins/autoplay.py",
+      "sha256": "7f3b1cd8e0634da35717ca9a975b14d2d96ed509a5b83dd636726078c367d426",
+      "size": 2987
+    },
+    {
+      "path": "AnonX_3/plugins/blacklist.py",
+      "sha256": "5af8ee9301fabffe5d36db857534215c2d2e1de5fa5ccaa9926fa3222bb35559",
+      "size": 1405
+    },
+    {
+      "path": "AnonX_3/plugins/bot_assistant.py",
+      "sha256": "622195a5791d716095d39eeeb67eac659397c5adbe88baa1ff2c45a8f7bdae76",
+      "size": 58878
+    },
+    {
+      "path": "AnonX_3/plugins/broadcast.py",
+      "sha256": "bd5327985e50b5c0a6f2c528ab6829bf889f0acb02f20edd3b01fb4702ba5287",
+      "size": 18079
+    },
+    {
+      "path": "AnonX_3/plugins/callbacks.py",
+      "sha256": "fe714cfe2e953ff1c726e81a8934f315b34ef7a68a4253deb5ca71139e9d2e97",
+      "size": 19191
+    },
+    {
+      "path": "AnonX_3/plugins/cookies.py",
+      "sha256": "c816b7de0c832a6071848289ceeb9b56a77466bec0d35cac9047dcc35b656f5f",
+      "size": 5975
+    },
+    {
+      "path": "AnonX_3/plugins/filter.py",
+      "sha256": "050ad44921ed782ce33c91bb8095ac7989fa28b5fd938e13ad679794cffa605e",
+      "size": 14699
+    },
+    {
+      "path": "AnonX_3/plugins/global_kick.py",
+      "sha256": "2b23e89924e2b12170ef161fa1b7aa262337d45a5e5937e0cb3d02f4b1180516",
+      "size": 7834
+    },
+    {
+      "path": "AnonX_3/plugins/id.py",
+      "sha256": "7a0b1179091a3a7ff75bb7af14edce7508df8f3d3a42d83cbb0b774311987506",
+      "size": 6214
+    },
+    {
+      "path": "AnonX_3/plugins/img/ping.jpg",
+      "sha256": "626a425b2d0c288be0880fa8574997b902cbdb8ca209408ffffc32443e87c8a5",
+      "size": 61614
+    },
+    {
+      "path": "AnonX_3/plugins/img/welcome.jpg",
+      "sha256": "6bb8e28f136338a356aea378d8d4af3d9baa3368735b876b1ba9681667a5a9ad",
+      "size": 92977
+    },
+    {
+      "path": "AnonX_3/plugins/inline_search.py",
+      "sha256": "5e67db976b874cb34d314335a4fe060dcc6a4bc4531dc201b601b084b6da09ce",
+      "size": 5272
+    },
+    {
+      "path": "AnonX_3/plugins/language.py",
+      "sha256": "40b609c95f85c0bc902dc19f7efda81ff4a75680f8d4d3963e881adca18625a7",
+      "size": 1616
+    },
+    {
+      "path": "AnonX_3/plugins/loop.py",
+      "sha256": "6a7c350c01f7b34df6b67c86a3a276d39d5b72a9401147bc29edb0beac3dd745",
+      "size": 1185
+    },
+    {
+      "path": "AnonX_3/plugins/misc.py",
+      "sha256": "2e83f9d6386e6a821492e3eeb9b7c69911699159469b81e2e9695ae3193ad45e",
+      "size": 15131
+    },
+    {
+      "path": "AnonX_3/plugins/moderation.py",
+      "sha256": "53006b116d253e6ab8644211439cbadef80d5d6a61206cb4d43333e73f829254",
+      "size": 9342
+    },
+    {
+      "path": "AnonX_3/plugins/name_checker.py",
+      "sha256": "f622066dd2a1135851e628016d4ae9daf94e78ec0850b31df18f152508bf1941",
+      "size": 10073
+    },
+    {
+      "path": "AnonX_3/plugins/pause.py",
+      "sha256": "6b401426ca147432b3480bd1a45f9cfb63876e8dd4f3ffddf34de78bf738d70f",
+      "size": 3204
+    },
+    {
+      "path": "AnonX_3/plugins/ping.py",
+      "sha256": "7e0fbe2e2ed08cb387fb18c9adf2516be8b30b0dbb1ec17ab05da1bfd5f94de0",
+      "size": 4969
+    },
+    {
+      "path": "AnonX_3/plugins/play.py",
+      "sha256": "ce0dee58447407e94b62a0d75c2f5a70695bc6865159a48edd2777bb9bd207ef",
+      "size": 11772
+    },
+    {
+      "path": "AnonX_3/plugins/queue.py",
+      "sha256": "87f3109de81ca76464c3d7071fa09ce3b7186109a595b06df4e236b92baedda6",
+      "size": 3611
+    },
+    {
+      "path": "AnonX_3/plugins/restart.py",
+      "sha256": "30b0c81cba40d2167572107235e598e81776d31888881c15d26d1eeaa394a029",
+      "size": 81445
+    },
+    {
+      "path": "AnonX_3/plugins/resume.py",
+      "sha256": "ec3be633db9990988d7827ee9faaf33a9b22313ed0c0dad574691c056edefe86",
+      "size": 3158
+    },
+    {
+      "path": "AnonX_3/plugins/seek.py",
+      "sha256": "26387390ed18c70e3d5563b7f93a89d07361c7b3668b950119dfb2debcf6852b",
+      "size": 1707
+    },
+    {
+      "path": "AnonX_3/plugins/skip.py",
+      "sha256": "dfab5a6f44de7daec2a5951a8590f1c2481e469f005017134ac8b494801e6c0e",
+      "size": 1135
+    },
+    {
+      "path": "AnonX_3/plugins/song.py",
+      "sha256": "3b0f71d6393525c6a30f278dd9008c72a44a1cdbcda6b011af0a234c75c83170",
+      "size": 12341
+    },
+    {
+      "path": "AnonX_3/plugins/start.py",
+      "sha256": "80ea035370f34fb7e6dbabb80717ce35f9968c1ebf9896f5725242373cb09b29",
+      "size": 10949
+    },
+    {
+      "path": "AnonX_3/plugins/stats.py",
+      "sha256": "faa44061fd2a8872b1ee7df537e211b6dc9b3170e57703fa0e36662f8bf848d0",
+      "size": 2172
+    },
+    {
+      "path": "AnonX_3/plugins/stop.py",
+      "sha256": "5d9672e8b833d6871d4bd5cd0a490c5ed534f8978762c294183589df92b65cc9",
+      "size": 1375
+    },
+    {
+      "path": "AnonX_3/plugins/sudoers.py",
+      "sha256": "8c3965d3f2c5d11910d549fc12d7a572169907dd9b2f860c8d9d86edc65c778e",
+      "size": 3804
+    },
+    {
+      "path": "DECISIONS.md",
+      "sha256": "20092022f2355968103e2d2ce41f2262e8f670a0c2ec9e9117983dd29fa73e52",
+      "size": 24797
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "c0529ce3df522938396216fe56b40ee9ce6be1997c558228790cab70b845aea9",
+      "size": 1135
+    },
+    {
+      "path": "ERRORS.md",
+      "sha256": "a0407a315556e03ab63ed351b958f14c1cc938dda8132d0b7c39f91514aaf69a",
+      "size": 53525
+    },
+    {
+      "path": "MEMORY.md",
+      "sha256": "a23d77b598d81177a6e84fc45f39b1dd426c34c9e85695b23beaa5a166e1c8a4",
+      "size": 13038
+    },
+    {
+      "path": "PROJECT_STATE.md",
+      "sha256": "19f67f1988901f03e6f1ba9f2aeeb02d079a5401c5189bb14c016274fe21eac4",
+      "size": 216038
+    },
+    {
+      "path": "Procfile",
+      "sha256": "1bc2d421ee1c580fb81c10d58c6609ead393a1fdfe671034cced25193acb4308",
+      "size": 19
+    },
+    {
+      "path": "README.md",
+      "sha256": "c04f67ed3353e8492289a56fdae9680373ace970b99dc0deacced55fb6637ee9",
+      "size": 2695
+    },
+    {
+      "path": "RELEASE_NOTES.md",
+      "sha256": "2b4613ab70f09c3602c22ebd9262fd03f6ee2a05d1f636e161c31386ecd310f8",
+      "size": 22797
+    },
+    {
+      "path": "VARIANT.txt",
+      "sha256": "41b9777b58d55db23831914f71a79710020f42c7f7f8913ce2ec9439777a0ad8",
+      "size": 16
+    },
+    {
+      "path": "app.json",
+      "sha256": "d02ad170efc23642574a566d4dc0790f4333d64249c045c1df605d07d2990510",
+      "size": 2851
+    },
+    {
+      "path": "broadcast.md",
+      "sha256": "a986059f8875abf30663f1bb824ffa729610931e40ec87886eb5b7f9f254f5e1",
+      "size": 13634
+    },
+    {
+      "path": "config.py",
+      "sha256": "b4f8c03235dde9fcd6cf405faa47abb937455cabdbd012f56c8768f91ba799a4",
+      "size": 66617
+    },
+    {
+      "path": "docker-compose.example.yml",
+      "sha256": "0f2f2eae62f712a0febf84e0afcdcc4827a318101ec80bc11f4f04be9ea56030",
+      "size": 2688
+    },
+    {
+      "path": "docs/audit-status.md",
+      "sha256": "fcbfa8827d5b9c6ec504d431a3dcde4423be3d314d55b3fa9f114cb9d78a94cf",
+      "size": 2253
+    },
+    {
+      "path": "docs/cookie-watcher-setup.md",
+      "sha256": "a168a4692a589d4d6f5db6a0cc4ea4b8985b3241bddf9a63d61229d4ac18ef63",
+      "size": 9198
+    },
+    {
+      "path": "docs/hardening-gate-failover-redis.md",
+      "sha256": "7a9a35164f8e9b5f7b01324fdf855b956af2752c66d9f68ff4a93d3987754f8a",
+      "size": 2098
+    },
+    {
+      "path": "docs/local-cookie-agent.md",
+      "sha256": "8623d79ba64a1d4579b3a26a58a6c0c7d0b31e5ca3da19a5cdfab32365320e57",
+      "size": 5696
+    },
+    {
+      "path": "docs/playback-architecture.md",
+      "sha256": "53ca6da5a358c760ae445ec117950be5d0459c7a74166d2a0ba25f02fb430748",
+      "size": 5227
+    },
+    {
+      "path": "docs/prompt-100-compliance.md",
+      "sha256": "4a831be1dd0d82b25fbaf29ccd02dd2e68813ebb9648342d90ca1d505c497dbe",
+      "size": 3861
+    },
+    {
+      "path": "heroku.yml",
+      "sha256": "f5655bda8968d75fc9125e1f83133bcfc7c1f47bd1fdf2183600b59db3841f87",
+      "size": 40
+    },
+    {
+      "path": "install_api_deps.sh",
+      "sha256": "2305cd8ecf84759f5c9a9504258bb47edca7f2f83894aaa941b0d45a6aa9f0af",
+      "size": 208
+    },
+    {
+      "path": "nginx/media.conf",
+      "sha256": "141b7931471eea998b2acdf12f12c1bd9392ff38faff12caaa5eeed33588ce21",
+      "size": 3025
+    },
+    {
+      "path": "ops/build_release.py",
+      "sha256": "3fa1fedd2c023eeb9649673a318f1836f4c61f9818a30861bd0b9008fca73c0c",
+      "size": 5655
+    },
+    {
+      "path": "ops/deploy_sync_runbook.md",
+      "sha256": "3660c27a9a780d77c0b60aa59f8b462765c06168eafea9b3e4e3c45267d0666c",
+      "size": 2563
+    },
+    {
+      "path": "ops/merge_env_full.py",
+      "sha256": "37c68fed8b603590a0ae389963f3647dc3996e5713d4b206e56a02950cd6182d",
+      "size": 15364
+    },
+    {
+      "path": "ops/mongo_check.py",
+      "sha256": "07c6503d1144aa44e475e18f48ba20e8db7c2bdce254062069994c76d88a18b8",
+      "size": 2858
+    },
+    {
+      "path": "ops/release_gate.py",
+      "sha256": "daefc5c0975c4d1b23e480b4ae3f350989e713dfcb2c93a9deae214d2de95722",
+      "size": 4433
+    },
+    {
+      "path": "ops/release_meta.py",
+      "sha256": "256cea27e56b00dc5e727632489f454153d9d8d328ac0c1c82ece0973fd6eaca",
+      "size": 295
+    },
+    {
+      "path": "ops/release_v3.3.1_runbook.md",
+      "sha256": "928b12f6629715d9e0701dab8b7b37343a43a8a923bb039a7152f258392b1fa3",
+      "size": 1717
+    },
+    {
+      "path": "ops/release_v3.4.10_runbook.md",
+      "sha256": "4c8053391b6cb8a8601d5e023375624e55b45f658693fef7f69b96d125616d82",
+      "size": 1972
+    },
+    {
+      "path": "ops/release_v3.4.6_runbook.md",
+      "sha256": "7c57e1fc8678bdc8cac6124a89860de6ba81ff4722b0a4170c39dc44987a872b",
+      "size": 1716
+    },
+    {
+      "path": "ops/release_v3.4.7_runbook.md",
+      "sha256": "df093a12baf101ac75f20f590fa860c3a4b27e907bed2dc6fcdb8c31e6aa8fc1",
+      "size": 2654
+    },
+    {
+      "path": "ops/release_v3.4.8_runbook.md",
+      "sha256": "5ce1681a7eee824d690a319372b87cb38a146350d00d4b29a582c5c30731304a",
+      "size": 1788
+    },
+    {
+      "path": "ops/release_v3.4.9_runbook.md",
+      "sha256": "2937e577c96661fd6f571208b0e7fb70bc518a4f2515b569d3012f73d0ce2d71",
+      "size": 2531
+    },
+    {
+      "path": "ops/resolver_latency_report.py",
+      "sha256": "63b2c740f6bea116432315c00a38d1d694c2c249f185ece14c82134269440b2c",
+      "size": 9432
+    },
+    {
+      "path": "ops/secret_scan.py",
+      "sha256": "ee450688e4f61aa2490ca2a5e3fff9c17b8144abfbb35cc1175a9f13f35d437b",
+      "size": 3171
+    },
+    {
+      "path": "ops/smoke_playback_checklist.md",
+      "sha256": "9038297183c120cda1e2845a98320f60d0a231512612d7988eeffed4396aaa77",
+      "size": 845
+    },
+    {
+      "path": "ops/startup_benchmark.py",
+      "sha256": "b750f8df0f9fbf41f0241a6cd834d033729b406ac199326be8009c55d865f4b3",
+      "size": 10970
+    },
+    {
+      "path": "ops/verify_release.py",
+      "sha256": "4df104320933c290e2552ce951488eaeb8b624b6f44c243b2267b1d66653e170",
+      "size": 3559
+    },
+    {
+      "path": "ops/verify_runtime_guard.sh",
+      "sha256": "c0bbe92e9c0a599f32ebf9ab67e01cdc9380a0d3cb2719d60c1099bde27db0d9",
+      "size": 2466
+    },
+    {
+      "path": "ops/verify_structure.py",
+      "sha256": "5c47a5611b01c98250581d3b07efed115ebf224fc9e6752eaaf0739fff5b6438",
+      "size": 5065
+    },
+    {
+      "path": "provider/README.md",
+      "sha256": "12673739571402a68363c7d5b8f523aea3806e4adb3dd42b1d4c9f03f1c40b5c",
+      "size": 1114
+    },
+    {
+      "path": "requirements.in",
+      "sha256": "230599c5da18070bf927fd47657912650d3c74516ac2583ee98e5a7720a0a155",
+      "size": 599
+    },
+    {
+      "path": "requirements.txt",
+      "sha256": "0f0899f7f183d86a3602a465417aaa1fb5e8cff6868731a9146ccfd8a18d207c",
+      "size": 1266
+    },
+    {
+      "path": "sample.env",
+      "sha256": "e625d3dfb09b1754004be54b57e492e817743ed02496658b0c5affb6124a4931",
+      "size": 11448
+    },
+    {
+      "path": "setup",
+      "sha256": "35e9cbbcec592df6a9ba1ec22d895571069649451155c3d012c40e38ba552477",
+      "size": 2708
+    },
+    {
+      "path": "start",
+      "sha256": "774d1db88e69a37d647f56d7cad042d52cb7c9aa51f063943e4b8d41aa484b45",
+      "size": 2254
+    },
+    {
+      "path": "tests/run_unit_smoke.py",
+      "sha256": "ab0eae4a51bba649b96d2f19e9c8f752652d17a76b35e4dd3f3a2031e92a8c6d",
+      "size": 297181
+    },
+    {
+      "path": "tests/test_authoritative_mweb_pot.py",
+      "sha256": "18878cb61d288da62c2c6b7fe747a6ccc02838e341697da2b2fceb77d4a45bed",
+      "size": 1616
+    },
+    {
+      "path": "tests/test_direct_warm_format_pot.py",
+      "sha256": "fd6609263c66a20737afeb7ccf867f5831fa9dbc29c47271dafc7c424eb21235",
+      "size": 1095
+    },
+    {
+      "path": "tests/test_dual_stage_audio.py",
+      "sha256": "1515c42f12dea4bfef2b020e41fdbfc1eb86e593578d467fccd5efcc968246ec",
+      "size": 2998
+    },
+    {
+      "path": "tests/test_dynamic_resource_control.py",
+      "sha256": "66d088d012d650bb4a81599da85fcab563585dade7f03756798cac4d080796a9",
+      "size": 31386
+    },
+    {
+      "path": "tests/test_final_sub4_pipeline.py",
+      "sha256": "8c7a33dd2f6367e1145f926057252270e04cbcdc2e8c9ebd45445073fbacbf25",
+      "size": 4649
+    },
+    {
+      "path": "tests/test_mweb_persistent_lightweight.py",
+      "sha256": "c55f77628f9faa460a2c84bc727ecde144bde01a67f35044b5a1cef2e8787257",
+      "size": 1533
+    },
+    {
+      "path": "tests/test_prewarm_overlap_and_140.py",
+      "sha256": "e32594fb618b82cd56ebb7ad8ae16a01c7dcd5d196f66c91055212a22bcae5ba",
+      "size": 3024
+    },
+    {
+      "path": "tests/test_recursion_fix.py",
+      "sha256": "d371acff20e0b391481067def9052a20e708a823d1ebaf139d323521dcb9c3be",
+      "size": 1953
+    },
+    {
+      "path": "tests/test_social_url_support.py",
+      "sha256": "87bf1e4d3e1ce339d3de8273d6fcd3773140c93d35087a407b75ecb5a9024613",
+      "size": 35480
+    },
+    {
+      "path": "tests/test_stream_dynamic_scaling.py",
+      "sha256": "dc06c97990e0849dd50ec5f9a6a8734056cefd77dab5a557994da9ad2bea85f0",
+      "size": 28033
+    },
+    {
+      "path": "tests/test_v346_full_final.py",
+      "sha256": "584e492c5af6beac6e939dcaebd6c65f98a58578bf456f97df9d622ee39a2610",
+      "size": 4294
+    },
+    {
+      "path": "tests/test_v347_deep_regression_fix.py",
+      "sha256": "744f5b0f381be091a2175c8030a81b340761420c7794958152abdf063988e23d",
+      "size": 3588
+    },
+    {
+      "path": "tests/test_v348_sub15_resolver.py",
+      "sha256": "7606749ece4358e345b050385f8712c41044df7fb293b7ee1400521ede3b0b21",
+      "size": 3964
+    },
+    {
+      "path": "tests/test_v349_sub15_e2e.py",
+      "sha256": "52b7fc7fb876582e2a6439ac5b1d7b3a26343ec44314f257d823381a057ae752",
+      "size": 7914
+    },
+    {
+      "path": "tests/test_vc_late_join.py",
+      "sha256": "92f4ac330ccc1a5a2e1c37d5076c09f85f3b2dee6103ec408c6cedc5b2cb59d6",
+      "size": 1185
+    },
+    {
+      "path": "tests/test_vc_native_handoff_tail.py",
+      "sha256": "42fb42abfe9806920abb840604b8689ba7be138db59cdc954ea0f9615ddacf6c",
+      "size": 2949
+    },
+    {
+      "path": "tests/test_vc_sub5_fast_attach.py",
+      "sha256": "eec6848708f9246a93b069462f361b02797434353a42d2a7a0db33f997cf83a5",
+      "size": 5897
+    }
+  ],
+  "project": "AnonX_3",
+  "release_date": "2026-08-09",
+  "version": "3.4.10"
+}

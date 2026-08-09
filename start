@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -u
+
+HEARTBEAT_FILE="${ANONX_HEARTBEAT_FILE:-.runtime/heartbeat}"
+CHECK_SEC="${ANONX_WATCHDOG_CHECK_SEC:-15}"
+STALE_SEC="${ANONX_WATCHDOG_STALE_SEC:-180}"
+STARTUP_GRACE_SEC="${ANONX_WATCHDOG_STARTUP_GRACE_SEC:-240}"
+TERM_GRACE_SEC="${ANONX_WATCHDOG_TERM_GRACE_SEC:-25}"
+BACKOFF_MAX_SEC="${ANONX_RESTART_BACKOFF_MAX_SEC:-30}"
+STOPPING=0
+CHILD_PID=""
+
+mkdir -p "$(dirname "$HEARTBEAT_FILE")"
+
+stop_child() {
+  STOPPING=1
+  if [[ -n "$CHILD_PID" ]] && kill -0 "$CHILD_PID" 2>/dev/null; then
+    kill -TERM "$CHILD_PID" 2>/dev/null || true
+    local waited=0
+    while kill -0 "$CHILD_PID" 2>/dev/null && (( waited < TERM_GRACE_SEC )); do
+      sleep 1
+      waited=$((waited + 1))
+    done
+    if kill -0 "$CHILD_PID" 2>/dev/null; then
+      kill -KILL "$CHILD_PID" 2>/dev/null || true
+    fi
+  fi
+}
+trap 'stop_child; exit 0' INT TERM HUP
+
+backoff=1
+while (( STOPPING == 0 )); do
+  rm -f "$HEARTBEAT_FILE"
+  python3 -m AnonX_3 &
+  CHILD_PID=$!
+  started=$(date +%s)
+  forced=0
+
+  while kill -0 "$CHILD_PID" 2>/dev/null; do
+    sleep "$CHECK_SEC"
+    (( STOPPING != 0 )) && break
+    now=$(date +%s)
+    age=$((now - started))
+    (( age < STARTUP_GRACE_SEC )) && continue
+
+    if [[ ! -e "$HEARTBEAT_FILE" ]]; then
+      echo "AnonX watchdog: heartbeat missing after startup grace; recycling pid=$CHILD_PID" >&2
+      forced=1
+    else
+      # GNU stat on Linux deployment target.
+      mtime=$(stat -c %Y "$HEARTBEAT_FILE" 2>/dev/null || echo 0)
+      stale=$((now - mtime))
+      if (( stale > STALE_SEC )); then
+        echo "AnonX watchdog: heartbeat stale ${stale}s; recycling pid=$CHILD_PID" >&2
+        forced=1
+      fi
+    fi
+
+    if (( forced != 0 )); then
+      kill -TERM "$CHILD_PID" 2>/dev/null || true
+      waited=0
+      while kill -0 "$CHILD_PID" 2>/dev/null && (( waited < TERM_GRACE_SEC )); do
+        sleep 1
+        waited=$((waited + 1))
+      done
+      kill -KILL "$CHILD_PID" 2>/dev/null || true
+      break
+    fi
+  done
+
+  wait "$CHILD_PID" 2>/dev/null
+  code=$?
+  CHILD_PID=""
+  (( STOPPING != 0 )) && break
+
+  echo "AnonX watchdog: child exited code=$code; restarting after ${backoff}s" >&2
+  sleep "$backoff"
+  backoff=$((backoff * 2))
+  (( backoff > BACKOFF_MAX_SEC )) && backoff=$BACKOFF_MAX_SEC
+done

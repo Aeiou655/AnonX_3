@@ -74,7 +74,7 @@ locked dependency graph, compiles the source, runs both test suites, verifies
 structure and secrets, imports the Downloader API, builds the archive twice,
 proves deterministic output, and verifies the manifest and SHA-256 sidecar.
 
-See [ops/release_v3.4.9_runbook.md](ops/release_v3.4.9_runbook.md) for the
+See [ops/release_v3.4.10_runbook.md](ops/release_v3.4.10_runbook.md) for the
 release and rollback procedure.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) and
