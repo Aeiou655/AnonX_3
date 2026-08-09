@@ -43,6 +43,10 @@ def test_botguard_spam_sources_are_off_normal_path():
     assert 'DIRECT_BACKGROUND_140_ENABLED", False' in PATCH
     assert 'download_pot=0' in PATCH
     assert 'foreground_pot=0' in PATCH
+    assert '_DOWNLOAD_NO_POT_MARKER = "_anonx_disable_pot_for_download"' in PATCH
+    assert "PoTokenProvider.apply_to_ydl_opts_sync = _sync" in PATCH
+    assert "PoTokenProvider.apply_to_ydl_opts = _async" in PATCH
+    assert "po_token download bypass" in PATCH
 
 
 def test_stale_delete_is_idempotent_not_error():
