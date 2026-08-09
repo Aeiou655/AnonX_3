@@ -26,6 +26,8 @@ def test_failed_cold_preconnect_resets_native_binding_before_retry():
     assert 'await client.leave_call(int(chat_id), close=False)' in PATCH
     assert 'await stop(int(chat_id))' in PATCH
     assert 'resource_manager.unregister_stream(int(chat_id))' in PATCH
+    assert 'speculative_external_failure = external_audio_session is not None' in PATCH
+    assert 'external_audio_session is None' in PATCH
     assert 'direct_cold_binding_retry' in PATCH
     assert 'reserved_slot=None' in PATCH
 
