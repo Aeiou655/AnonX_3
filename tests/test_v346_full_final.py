@@ -11,7 +11,7 @@ ENV = (ROOT / ".env").read_text(encoding="utf-8")
 SAMPLE = (ROOT / "sample.env").read_text(encoding="utf-8")
 
 
-def test_v4_runs_mweb_micro_first_and_preserves_legacy_fallback_workers():
+def test_v4_runs_mweb_micro_first_with_one_delayed_authoritative_hedge():
     assert 'profiles.append(("audio_escape_fast", escape_opts, False))' in YOUTUBE
     assert 'resolver_slot_hint=slot_hint' in YOUTUBE
     assert '0 if idx == 0 else 1' in YOUTUBE
@@ -20,8 +20,11 @@ def test_v4_runs_mweb_micro_first_and_preserves_legacy_fallback_workers():
     assert '"tv_downgraded", "web_safari", "android_vr"' in YOUTUBE
     assert 'direct_resolver_micro_race_started' in YOUTUBE
     assert 'fastest_valid_206=1' in YOUTUBE
-    assert 'direct_resolver_v4_micro_first' in YOUTUBE
-    assert 'full_extract_critical_lanes=0' in YOUTUBE
+    assert 'direct_resolver_v4_delayed_hedge' in YOUTUBE
+    assert 'authoritative_lanes=1 fallback_serial_wait=0' in YOUTUBE
+    assert 'DIRECT_V4_AUTHORITATIVE_HEDGE_DELAY_SEC' in CONFIG
+    assert 'name=f"direct-authoritative-delayed:' in YOUTUBE
+    assert 'loser.cancel()' in YOUTUBE
 
 
 def test_micro_winner_is_proven_and_vplay_can_use_adaptive_pair():

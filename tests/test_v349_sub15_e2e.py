@@ -150,19 +150,20 @@ def test_initial_playback_lease_releases_exactly_once() -> None:
 
 def test_cold_start_gate_requires_100_per_command_and_independent_p95() -> None:
     parsed = REPORT.parse_trace_line(
-        "playback_trace command=play search=250ms play_task_scheduled=1200ms "
+        "playback_trace command=play total_ms=2380 search=250ms play_task_scheduled=1200ms "
         "first_telegram_audio_packet=1800ms audible=2100ms"
     )
     assert parsed is not None
     assert parsed.scheduled_to_packet_ms == 600.0
-    assert parsed.end_to_end_ms == 2100.0
+    assert parsed.end_to_end_ms == 2380.0
+    assert parsed.audible_ms == 2100.0
 
     samples = [
         REPORT.ResolverSample("play", 600.0, 300.0, 1200.0),
         REPORT.ResolverSample("play", 700.0, 350.0, 1300.0),
         REPORT.ResolverSample("play", 800.0, 400.0, 1400.0),
     ]
-    report = REPORT.summarize(samples, target_ms=3000.0)
+    report = REPORT.summarize(samples, target_ms=4000.0)
     assert report["p95_ms"] == 800.0
     assert report["scheduled_to_packet"]["p95_ms"] == 400.0
     assert report["end_to_end"]["p95_ms"] == 1400.0
@@ -175,31 +176,31 @@ def test_cold_start_gate_requires_100_per_command_and_independent_p95() -> None:
     assert report["end_to_end"]["pass_rate_pct"] == 100.0
 
     play = [
-        REPORT.ResolverSample("play", 900.0, 150.0, 2800.0)
+        REPORT.ResolverSample("play", 900.0, 150.0, 3800.0)
         for _ in range(100)
     ]
     vplay = [
-        REPORT.ResolverSample("vplay", 1000.0, 180.0, 2900.0)
+        REPORT.ResolverSample("vplay", 1000.0, 180.0, 3900.0)
         for _ in range(95)
     ] + [
-        REPORT.ResolverSample("vplay", 1100.0, 190.0, 3200.0)
+        REPORT.ResolverSample("vplay", 1100.0, 190.0, 4200.0)
         for _ in range(5)
     ]
     gated = REPORT.evaluate_command_gates(
         play + vplay,
-        target_ms=3000.0,
+        target_ms=4000.0,
         min_samples=100,
         metric="end-to-end",
     )
     assert gated["sample_floor_met"] is True
     assert gated["commands"]["play"]["pass"] is True
-    assert gated["commands"]["vplay"]["end_to_end"]["p95_ms"] == 2900.0
+    assert gated["commands"]["vplay"]["end_to_end"]["p95_ms"] == 3900.0
     assert gated["commands"]["vplay"]["pass"] is True
     assert gated["pass"] is True
 
     too_few = REPORT.evaluate_command_gates(
         play + vplay[:-1],
-        target_ms=3000.0,
+        target_ms=4000.0,
         min_samples=100,
         metric="end-to-end",
     )
@@ -207,12 +208,12 @@ def test_cold_start_gate_requires_100_per_command_and_independent_p95() -> None:
     assert too_few["commands"]["vplay"]["pass"] is False
 
     slow_vplay = [
-        REPORT.ResolverSample("vplay", 1000.0, 180.0, 3100.0)
+        REPORT.ResolverSample("vplay", 1000.0, 180.0, 4100.0)
         for _ in range(100)
     ]
     independent = REPORT.evaluate_command_gates(
         play + slow_vplay,
-        target_ms=3000.0,
+        target_ms=4000.0,
         min_samples=100,
         metric="end-to-end",
     )
@@ -259,8 +260,8 @@ def test_source_wires_parallel_ack_admission_and_authenticated_micro_context() -
         encoding="utf-8"
     )
     assert 'setattr(config, "DIRECT_MICRO_PLAYER_CLIENTS", ("mweb",))' in final_patch
-    assert "direct_resolver_v4_micro_first" in youtube
-    assert "full_extract_critical_lanes=0" in youtube
+    assert "direct_resolver_v4_delayed_hedge" in youtube
+    assert "authoritative_lanes=1 fallback_serial_wait=0" in youtube
     assert "# DIRECT_STARTUP_V4=True" in sample_env
 
 

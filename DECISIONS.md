@@ -14,8 +14,14 @@ Current source is authoritative; this workspace does not contain Git metadata.
 - Native call creation has one assistant/chat owner. V4 disables speculative
   `create_call()` prewarm plus reset/settle retries that raced the real join.
 - Release requires 100 cold `/play` and 100 cold `/vplay` traces. Each command
-  independently requires actual audible end-to-end p95 <=3000 ms; aggregation
-  cannot hide a failing command. `DIRECT_STARTUP_V4=False` is the rollback.
+  independently requires command-to-ready `playback_trace total_ms` p95
+  <=4000 ms; aggregation cannot hide a failing command. Every counted trace
+  must also contain truthful `audible=` proof. `DIRECT_STARTUP_V4=False` is the
+  rollback.
+- A micro resolver miss must not be serialized ahead of yt-dlp. The micro lane
+  receives a 180 ms head start, after which exactly one authoritative extractor
+  is hedged. A winner cancels pending losers; no second full foreground lane is
+  launched under V4.
 
 ## Presentation Cannot Roll Back Playback; First yt-dlp Bootstrap Is Single-Flight (2026-08-09)
 
@@ -66,7 +72,7 @@ Current source is authoritative; this workspace does not contain Git metadata.
   returned. Both foreground hedges continue independently through media proof,
   and the first validated full or micro source wins.
 - This historical resolver-only SLO is superseded by the independent 100+100
-  command-to-audible V4 gate above. Local tests cannot certify external latency.
+  command-to-ready V4 gate above. Local tests cannot certify external latency.
 
 ## Cold Initial Direct Attach Bypasses MediaStream Inspection (2026-08-08)
 

@@ -16,6 +16,13 @@ For `/vplay`, the EXTERNAL microphone remains continuous while raw video is
 attached by a per-chat post-start task. Stop, skip, replacement, disconnect, and
 shutdown cancel that task through the existing post-start ownership registry.
 
+The foreground resolver starts the authenticated micro lane immediately and
+starts exactly one full authoritative hedge after 180 ms. The first source that
+passes HTTP 200/206 validation wins. This retains uncontended micro wins without
+serializing a micro miss ahead of the full extractor. Production acceptance is
+measured from command receipt through `playback_trace total_ms`; audible proof
+remains a required diagnostic milestone within every accepted trace.
+
 ## Stack
 
 - Python 3.13, kurigram/Pyrogram, PyTgCalls/ntgcalls

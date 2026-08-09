@@ -67,14 +67,15 @@ def test_live_trace_parser_uses_exact_search_to_schedule_window() -> None:
     line = (
         "INFO playback_trace command=play video=0 total_ms=2300 "
         "ack=100ms search=500ms play_task_scheduled=1800ms "
-        "first_telegram_audio_packet=2200ms ready=2300ms"
+        "first_telegram_audio_packet=2200ms audible=2250ms ready=2300ms"
     )
     sample = REPORT.parse_trace_line(line)
     assert sample is not None
     assert sample.command == "play"
     assert sample.resolver_to_scheduled_ms == 1300
     assert sample.scheduled_to_packet_ms == 400
-    assert sample.end_to_end_ms == 2200
+    assert sample.end_to_end_ms == 2300
+    assert sample.audible_ms == 2250
 
 
 def test_nearest_rank_p95_and_sample_summary() -> None:

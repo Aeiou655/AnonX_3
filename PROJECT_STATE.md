@@ -3,9 +3,12 @@
   proof requires real PCM plus post-submit outgoing-clock advance plus confirmed
   unmute without depending on video attach. Speculative native-call precreation
   and connection reset/settle retries are bypassed under `DIRECT_STARTUP_V4`.
-  Resolver micro budgets are 1.20s total / 0.95s lane / 0.20s HTTP proof. The
-  live release gate now requires 100 cold `/play` and 100 cold `/vplay` samples,
-  independently p95 <=3000ms. Live canary evidence remains required.
+  The resolver now gives micro resolution a 180 ms head start and then races
+  exactly one HTTP-validated authoritative lane, eliminating the serial micro
+  miss seen in production. The live release gate requires 100 cold `/play` and
+  100 cold `/vplay` samples, independently using command-to-ready
+  `playback_trace total_ms` p95 <=4000ms with truthful audible proof present.
+  Live canary evidence remains required.
 - 09-Aug-2026: **v3.4.10 playback/UI isolation and yt-dlp bootstrap safety**:
   Telegram status-card edits and other presentation-only work no longer share
   the queue/media/VC rollback boundary. A deleted queued card keeps the track

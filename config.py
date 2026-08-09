@@ -1026,6 +1026,19 @@ class Config:
                 float(getenv("DIRECT_MICRO_TOTAL_BUDGET_SEC", "1.45") or 1.45),
             ),
         )
+        # V4 starts one full authoritative extractor after a short grace
+        # period instead of waiting for the complete micro-lane budget. This
+        # preserves the cheap mweb win while removing a 1s+ serial miss tail.
+        self.DIRECT_V4_AUTHORITATIVE_HEDGE_DELAY_SEC = max(
+            0.05,
+            min(
+                0.50,
+                float(
+                    getenv("DIRECT_V4_AUTHORITATIVE_HEDGE_DELAY_SEC", "0.18")
+                    or 0.18
+                ),
+            ),
+        )
         self.DIRECT_VIDEO_ADAPTIVE_PAIR: bool = _bool_env(
             "DIRECT_VIDEO_ADAPTIVE_PAIR", True
         )

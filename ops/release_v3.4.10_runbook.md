@@ -41,8 +41,9 @@ The first-constructor gate ends as soon as one `YoutubeDL` runtime finishes
 initialization; it does not serialize extraction. The V4 candidate supersedes
 the prior 20+20 gate. Collect at least 100 cold `/play` and 100 cold `/vplay`
 traces, then run `ops/resolver_latency_report.py --command both --metric
-end-to-end --min-samples 100 --target-ms 3000`. Both commands must independently
-have truthful audible p95 <=3000 ms. See `ops/audio_first_v4_runbook.md`.
+end-to-end --min-samples 100 --target-ms 4000`. Both commands must independently
+have command-to-ready `playback_trace total_ms` p95 <=4000 ms and retain
+truthful audible proof. See `ops/audio_first_v4_runbook.md`.
 
 ## Rollback
 

@@ -36,7 +36,7 @@ def test_vplay_cross_tier_prewarm_is_singleflight():
     assert "if self._direct_warm_tasks.get(_key) is done:" in warm
 
 
-def test_v4_micro_lane_owns_foreground_before_full_resolver_fallback():
+def test_v4_micro_lane_gets_a_bounded_head_start_before_one_full_hedge():
     init = _block(YOUTUBE, "def __init__", "@staticmethod\n    def cookie_free_mode")
     resolver = _block(
         YOUTUBE,
@@ -57,7 +57,9 @@ def test_v4_micro_lane_owns_foreground_before_full_resolver_fallback():
     assert "foreground_slots=%s" in resolver
     assert "dynamic_ytdlp=%s" in resolver
     assert "if not bool(getattr(config, \"DIRECT_STARTUP_V4\", True))" in resolver
-    assert "full_extract_critical_lanes=0" in resolver
+    assert "DIRECT_V4_AUTHORITATIVE_HEDGE_DELAY_SEC" in resolver
+    assert "_run_delayed_authoritative_hedge" in resolver
+    assert "authoritative_lanes=1 fallback_serial_wait=0" in resolver
 
 
 def test_audio_and_video_fast_lanes_still_use_distinct_sticky_workers():

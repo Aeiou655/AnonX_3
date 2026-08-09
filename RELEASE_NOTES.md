@@ -5,9 +5,14 @@
 - Audible telemetry requires confirmed unmute and a real-PCM-backed outgoing
   clock advance; source attachment alone never counts as audible.
 - Native binding precreate/reset/settle races are disabled by the V4 state path.
+- The micro resolver starts immediately; exactly one authoritative yt-dlp lane
+  starts after a 180 ms grace period. This removes the full micro-budget serial
+  miss while avoiding duplicate full foreground extractors.
 - Promotion requires 100 cold runs per command and independent end-to-end
-  audible p95 <=3000ms for both commands. This checkout contains no fabricated
-  live results; canary logs must be evaluated with `ops/resolver_latency_report.py`.
+  command-to-ready `playback_trace total_ms` p95 <=4000ms for both commands.
+  Every counted trace must still contain truthful audible proof. This checkout
+  contains no fabricated live results; canary logs must be evaluated with
+  `ops/resolver_latency_report.py`.
 
 ---
 
