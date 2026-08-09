@@ -1,16 +1,11 @@
 # Copyright (c) 2025 AnonX
 # Licensed under the MIT License.
-"""Targeted startup hotfix for vplay handoff and failed cold preconnect cleanup.
-
-This module is auto-imported with the normal plugin set. It intentionally
-patches only the narrow PyTgCalls startup hooks that are on the measured cold
-startup critical path. The existing audio /play path is left unchanged unless
-its speculative preconnect already failed and needs one clean retry.
-"""
+"""Targeted startup hotfixes for VC startup and YouTube transport compatibility."""
 
 from __future__ import annotations
 
 import asyncio
+import os
 import time
 
 from ntgcalls import ConnectionError, ConnectionNotFound, MediaSource
@@ -19,15 +14,112 @@ from pytgcalls import types
 from AnonX_3 import config, logger
 from AnonX_3.core.calls import TgCall
 from AnonX_3.core.resource_manager import resource_manager
+from AnonX_3.core.youtube import YouTube
 
 _PATCH_SENTINEL = "_anonx_vplay_cold_start_deep_fix_v3411"
+_YTDLP_PROXY_SENTINEL = "_anonx_ytdlp_auto_proxy_compat_bypass_v1"
 
 
 def _enabled(name: str, default: bool = True) -> bool:
     return bool(getattr(config, name, default))
 
 
-async def _hard_reset_failed_binding(self: TgCall, client, chat_id: int, reason: str) -> None:
+def _ytdlp_auto_proxy_bypass_enabled() -> bool:
+    raw = os.getenv("YTDLP_AUTO_PROXY_COMPAT_BYPASS", "true").strip().lower()
+    return raw not in {"0", "false", "no", "off", "disabled"}
+
+
+def _install_ytdlp_transport_patch() -> None:
+    """Keep auto proxy for search, but force yt-dlp itself to direct transport.
+
+    config.py intentionally exports the detected local proxy through PROXY_URL /
+    ALL_PROXY. Omitting yt-dlp's proxy option is therefore not enough: yt-dlp
+    can still inherit the environment proxy. Its documented explicit empty
+    proxy value means direct connection, so set ``proxy=''`` for Python API
+    options and ``--proxy ''`` for CLI invocations when the configured mode is
+    auto. Explicit operator proxies and YOUTUBE_PROXY=off remain untouched.
+    """
+
+    if getattr(YouTube, _YTDLP_PROXY_SENTINEL, False):
+        return
+
+    original_base_opts = YouTube._build_ytdlp_base_api_opts
+    original_cli_args = YouTube.build_ytdlp_cli_args
+
+    def _auto_mode() -> bool:
+        return (
+            _ytdlp_auto_proxy_bypass_enabled()
+            and str(getattr(config, "YOUTUBE_PROXY_MODE", "") or "").strip().lower()
+            == "auto"
+        )
+
+    def build_ytdlp_base_api_opts_direct_on_auto(self, *args, **kwargs):
+        result = original_base_opts(self, *args, **kwargs)
+        if not _auto_mode():
+            return result
+
+        try:
+            opts, js_runtime_cli, pot_provider_url = result
+            if not isinstance(opts, dict):
+                return result
+
+            detected = str(
+                opts.get("proxy")
+                or getattr(self, "_youtube_proxy", "")
+                or getattr(config, "YOUTUBE_PROXY", "")
+                or ""
+            ).strip()
+
+            # Explicit empty proxy is yt-dlp's direct-connection override. Do
+            # not merely remove the key: config.py may have exported ALL_PROXY.
+            opts["proxy"] = ""
+
+            if not getattr(self, "_ytdlp_auto_proxy_bypass_logged", False):
+                logger.warning(
+                    "youtube_ytdlp_auto_proxy_bypass proxy=%s transport=direct "
+                    "override=explicit_empty search_proxy_retained=1",
+                    detected.split("@")[-1] if detected else "auto",
+                )
+                self._ytdlp_auto_proxy_bypass_logged = True
+            return opts, js_runtime_cli, pot_provider_url
+        except Exception as ex:
+            logger.debug(
+                "youtube_ytdlp_auto_proxy_bypass skipped err=%s",
+                type(ex).__name__,
+            )
+            return result
+
+    def build_ytdlp_cli_args_direct_on_auto(self, *args, **kwargs):
+        cli = list(original_cli_args(self, *args, **kwargs))
+        if not _auto_mode() or kwargs.get("include_proxy", True) is False:
+            return cli
+
+        # The patched base options already suppress the normal truthy --proxy
+        # append. Still normalize defensively in case call signatures change.
+        cleaned: list[str] = []
+        idx = 0
+        while idx < len(cli):
+            if cli[idx] == "--proxy":
+                idx += 2
+                continue
+            cleaned.append(cli[idx])
+            idx += 1
+        cleaned.extend(["--proxy", ""])
+        return cleaned
+
+    YouTube._build_ytdlp_base_api_opts = build_ytdlp_base_api_opts_direct_on_auto
+    YouTube.build_ytdlp_cli_args = build_ytdlp_cli_args_direct_on_auto
+    setattr(YouTube, _YTDLP_PROXY_SENTINEL, True)
+    logger.info(
+        "youtube_transport_fastpath_patch enabled auto_proxy_ytdlp_bypass=%s "
+        "explicit_direct_override=1",
+        int(_ytdlp_auto_proxy_bypass_enabled()),
+    )
+
+
+async def _hard_reset_failed_binding(
+    self: TgCall, client, chat_id: int, reason: str
+) -> None:
     """Remove a half-created NTgCalls call before a fresh direct retry."""
 
     try:
@@ -88,9 +180,6 @@ def _install_patch() -> None:
         ):
             return stream, event_path
 
-        # Keep the already-decoding EXTERNAL audio source alive while adding the
-        # raw video camera. This avoids throwing away accepted lead PCM and then
-        # paying a second raw-audio shell startup after the source swap.
         audio = self._raw_audio_parameters(profile.audio_parameters)
         microphone = types.raw.AudioStream(MediaSource.EXTERNAL, "", audio)
         hybrid = types.raw.Stream(microphone=microphone, camera=camera)
@@ -125,10 +214,6 @@ def _install_patch() -> None:
             and not session.get("closed")
             and session.get("vplay_handoff_pending")
         ):
-            # The early-connect task has already returned before this helper is
-            # called, so real PCM should already be accepted. Waiting for
-            # client.time() is counterproductive because the clock commonly
-            # stays zero until the camera/source refresh.
             accepted = session.get("first_frame_accepted")
             if accepted is not None and not accepted.is_set():
                 try:
@@ -159,11 +244,9 @@ def _install_patch() -> None:
             and session.get("vplay_handoff_pending")
             and not session.get("vplay_handoff_complete")
         ):
-            # Stock vplay closes EXTERNAL audio immediately before source swap.
-            # For the hybrid stream that removes the exact microphone being
-            # handed to NTgCalls, so defer this one close until the swap settles.
             session["vplay_close_deferred"] = True
             if session.get("vplay_close_watchdog") is None:
+
                 async def _expire_unfinished_handoff() -> None:
                     await asyncio.sleep(1.5)
                     if (
@@ -259,9 +342,6 @@ def _install_patch() -> None:
             )
 
             if speculative_external_failure:
-                # A speculative EXTERNAL stream is coupled to its decoder/session.
-                # Never retry that stream without the session; propagate so the
-                # normal resolved direct path can rebuild on the clean binding.
                 raise
 
             if fallback_stream is None:
@@ -312,4 +392,5 @@ def _install_patch() -> None:
     )
 
 
+_install_ytdlp_transport_patch()
 _install_patch()
