@@ -4573,9 +4573,10 @@ class YouTube:
                 now + self._search_cache_ttl, metadata
             )
 
-        # Start the two fast authoritative full-resolver lanes immediately on
-        # distinct sticky workers. The tiny player-response lane races beside
-        # them rather than running serially in front of them.
+        # Legacy mode races full extractors immediately. V4 gives the bounded
+        # mweb player-response + 206 lane exclusive foreground ownership; full
+        # yt-dlp extraction begins only after that 1.2s lane misses, so duplicate
+        # CPU/network work cannot slow the startup winner.
         prestarted: dict[str, asyncio.Task] = {}
         fast_race_labels: list[str] = []
         if not exact_audio140 and profiles:
@@ -4610,16 +4611,24 @@ class YouTube:
                 int((time.monotonic() - extract_started) * 1000),
             )
 
-        for idx, (profile, extract_opts, require_140) in enumerate(profiles[:2]):
-            if profile not in fast_race_labels:
-                continue
-            task = asyncio.create_task(
-                _run_prestarted_extract(
-                    profile, extract_opts, require_140, 0 if idx == 0 else 1
-                ),
-                name=f"direct-authoritative-race:{video_id}:{profile}",
+        if not bool(getattr(config, "DIRECT_STARTUP_V4", True)):
+            for idx, (profile, extract_opts, require_140) in enumerate(profiles[:2]):
+                if profile not in fast_race_labels:
+                    continue
+                task = asyncio.create_task(
+                    _run_prestarted_extract(
+                        profile, extract_opts, require_140, 0 if idx == 0 else 1
+                    ),
+                    name=f"direct-authoritative-race:{video_id}:{profile}",
+                )
+                prestarted[profile] = task
+        else:
+            logger.info(
+                "direct_resolver_v4_micro_first video_id=%s video=%s "
+                "full_extract_critical_lanes=0 fallback_after_micro=1",
+                video_id,
+                int(bool(video)),
             )
-            prestarted[profile] = task
 
         micro_total_budget = max(
             0.50,

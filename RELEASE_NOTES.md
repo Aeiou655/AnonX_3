@@ -1,3 +1,16 @@
+# Audio-First Startup V4 Candidate (2026-08-09)
+
+- `/play` and `/vplay` submit real EXTERNAL PCM without awaiting unmute.
+- `/vplay` attaches video in the background while audio remains continuous.
+- Audible telemetry requires confirmed unmute and a real-PCM-backed outgoing
+  clock advance; source attachment alone never counts as audible.
+- Native binding precreate/reset/settle races are disabled by the V4 state path.
+- Promotion requires 100 cold runs per command and independent end-to-end
+  audible p95 <=3000ms for both commands. This checkout contains no fabricated
+  live results; canary logs must be evaluated with `ops/resolver_latency_report.py`.
+
+---
+
 # AnonX_3 v3.4.10 Final — Playback/UI Isolation + yt-dlp Bootstrap Safety (2026-08-09)
 
 - A missing or deleted Telegram SEARCHING/Queued card is now a noncritical

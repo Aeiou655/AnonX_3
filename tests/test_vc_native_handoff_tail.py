@@ -34,8 +34,9 @@ def test_required_unmute_races_only_after_source_ready_play_entry():
     assert "DIRECT_VC_UNMUTE_ATTEMPTS" in overlap
     slot = CALLS[CALLS.index("async def _play_with_startup_slot"):CALLS.index("async def _discard_empty_prejoin", CALLS.index("async def _play_with_startup_slot"))]
     assert "vc-unmute-overlap" in slot
-    assert "await unmute_overlap_task" in slot
-    assert "unmute_overlap=%s" in slot
+    assert "vc_required_unmute_background" in slot
+    assert "unmute_blocked_audio_ms=0" in slot
+    assert "_complete_external_required_unmute" in CALLS
     # This function is entered only by the source-ready play path; metadata warm
     # itself must still contain no Telegram JoinGroupCall.
     warm = CALLS[CALLS.index("def _schedule_vc_metadata_warm"):CALLS.index("def _pop_vc_native_payload", CALLS.index("def _schedule_vc_metadata_warm"))]
@@ -50,6 +51,7 @@ def test_sub5_tail_controls_are_exposed():
         "DIRECT_VC_UNMUTE_RETRY_MS",
         "DIRECT_VC_UNMUTE_ATTEMPTS",
         "DIRECT_FIRST_PACKET_POLL_MS",
+        "DIRECT_STARTUP_V4",
     ):
         assert name in CONFIG
         assert name in SAMPLE

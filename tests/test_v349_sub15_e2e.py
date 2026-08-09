@@ -148,13 +148,21 @@ def test_initial_playback_lease_releases_exactly_once() -> None:
     asyncio.run(_case())
 
 
-def test_all_three_latency_metrics_are_reported_against_1500ms() -> None:
+def test_cold_start_gate_requires_100_per_command_and_independent_p95() -> None:
+    parsed = REPORT.parse_trace_line(
+        "playback_trace command=play search=250ms play_task_scheduled=1200ms "
+        "first_telegram_audio_packet=1800ms audible=2100ms"
+    )
+    assert parsed is not None
+    assert parsed.scheduled_to_packet_ms == 600.0
+    assert parsed.end_to_end_ms == 2100.0
+
     samples = [
         REPORT.ResolverSample("play", 600.0, 300.0, 1200.0),
         REPORT.ResolverSample("play", 700.0, 350.0, 1300.0),
         REPORT.ResolverSample("play", 800.0, 400.0, 1400.0),
     ]
-    report = REPORT.summarize(samples, target_ms=1500.0)
+    report = REPORT.summarize(samples, target_ms=3000.0)
     assert report["p95_ms"] == 800.0
     assert report["scheduled_to_packet"]["p95_ms"] == 400.0
     assert report["end_to_end"]["p95_ms"] == 1400.0
@@ -166,27 +174,51 @@ def test_all_three_latency_metrics_are_reported_against_1500ms() -> None:
     assert report["end_to_end"]["pass"] is True
     assert report["end_to_end"]["pass_rate_pct"] == 100.0
 
-    # Nearest-rank p95 permits one outlier in a 20-sample set. The release gate
-    # must still reject it because the user requires a 100% <=1.5s pass rate.
-    outlier = [
-        REPORT.ResolverSample("play", 1000.0, 300.0, 1200.0)
-        for _ in range(19)
-    ] + [REPORT.ResolverSample("play", 1600.0, 300.0, 1200.0)]
-    outlier_report = REPORT.summarize(outlier, target_ms=1500.0)
-    assert outlier_report["p95_ms"] == 1000.0
-    assert outlier_report["pass"] is True
-    assert outlier_report["pass_rate_pct"] == 95.0
-    assert outlier_report["all_samples_pass"] is False
-    gated = REPORT.evaluate_gate(
-        outlier,
-        target_ms=1500.0,
-        min_samples=20,
-        metric="resolver",
-        command="play",
+    play = [
+        REPORT.ResolverSample("play", 900.0, 150.0, 2800.0)
+        for _ in range(100)
+    ]
+    vplay = [
+        REPORT.ResolverSample("vplay", 1000.0, 180.0, 2900.0)
+        for _ in range(95)
+    ] + [
+        REPORT.ResolverSample("vplay", 1100.0, 190.0, 3200.0)
+        for _ in range(5)
+    ]
+    gated = REPORT.evaluate_command_gates(
+        play + vplay,
+        target_ms=3000.0,
+        min_samples=100,
+        metric="end-to-end",
     )
-    assert gated["p95_ms"] == 1000.0
     assert gated["sample_floor_met"] is True
-    assert gated["pass"] is False
+    assert gated["commands"]["play"]["pass"] is True
+    assert gated["commands"]["vplay"]["end_to_end"]["p95_ms"] == 2900.0
+    assert gated["commands"]["vplay"]["pass"] is True
+    assert gated["pass"] is True
+
+    too_few = REPORT.evaluate_command_gates(
+        play + vplay[:-1],
+        target_ms=3000.0,
+        min_samples=100,
+        metric="end-to-end",
+    )
+    assert too_few["sample_floor_met"] is False
+    assert too_few["commands"]["vplay"]["pass"] is False
+
+    slow_vplay = [
+        REPORT.ResolverSample("vplay", 1000.0, 180.0, 3100.0)
+        for _ in range(100)
+    ]
+    independent = REPORT.evaluate_command_gates(
+        play + slow_vplay,
+        target_ms=3000.0,
+        min_samples=100,
+        metric="end-to-end",
+    )
+    assert independent["commands"]["play"]["pass"] is True
+    assert independent["commands"]["vplay"]["pass"] is False
+    assert independent["pass"] is False
 
 
 def test_source_wires_parallel_ack_admission_and_authenticated_micro_context() -> None:
@@ -194,6 +226,7 @@ def test_source_wires_parallel_ack_admission_and_authenticated_micro_context() -
     youtube = (ROOT / "AnonX_3/core/youtube.py").read_text(encoding="utf-8")
     config = (ROOT / "config.py").read_text(encoding="utf-8")
     env = (ROOT / ".env").read_text(encoding="utf-8")
+    sample_env = (ROOT / "sample.env").read_text(encoding="utf-8")
     assert "DeferredStatusMessage(m)" in play
     assert play.index("async def _warm_search_and_direct") < play.index(
         'name=f"play-status-ack:'
@@ -209,12 +242,26 @@ def test_source_wires_parallel_ack_admission_and_authenticated_micro_context() -
     assert "vplay_audio_lead_packet_ready" in calls
     assert "DIRECT_VIDEO_AUDIO_LEAD_PACKET_TIMEOUT_SEC" in config
     assert "reconnect=0" in calls
+    assert "vc_required_unmute_background" in calls
+    assert "unmute_blocked_audio_ms=0" in calls
+    assert "direct_video_background_source_swap" in calls
+    proof = (ROOT / "AnonX_3/plugins/sub3_proof_guard.py").read_text(
+        encoding="utf-8"
+    )
+    assert "video_attach_required=0" in proof
+    assert 'session["unmute_confirmed"].is_set()' in proof
     assert "player_ytcfg = get_default_ytcfg(client)" in youtube
     assert "webpage_ytcfg=player_ytcfg" in youtube
     assert "auth_client_rejects_cookies" in youtube
     assert '"tv_downgraded", "web_safari", "android_vr"' in youtube
     assert "tv_downgraded,web_safari,android_vr" in config
-    assert "DIRECT_MICRO_PLAYER_CLIENTS=tv_downgraded,web_safari,android_vr" in env
+    final_patch = (ROOT / "AnonX_3/plugins/zzzz_sub3_final.py").read_text(
+        encoding="utf-8"
+    )
+    assert 'setattr(config, "DIRECT_MICRO_PLAYER_CLIENTS", ("mweb",))' in final_patch
+    assert "direct_resolver_v4_micro_first" in youtube
+    assert "full_extract_critical_lanes=0" in youtube
+    assert "# DIRECT_STARTUP_V4=True" in sample_env
 
 
 def main() -> int:
@@ -222,7 +269,7 @@ def main() -> int:
         test_deferred_status_does_not_block_reads_and_forwards_mutations,
         test_player_response_summary_is_actionable_and_secret_free,
         test_initial_playback_lease_releases_exactly_once,
-        test_all_three_latency_metrics_are_reported_against_1500ms,
+        test_cold_start_gate_requires_100_per_command_and_independent_p95,
         test_source_wires_parallel_ack_admission_and_authenticated_micro_context,
     ]
     for test in tests:

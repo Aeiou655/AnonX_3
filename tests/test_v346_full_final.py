@@ -8,9 +8,10 @@ MAIN = (ROOT / "AnonX_3/__main__.py").read_text(encoding="utf-8")
 DIR = (ROOT / "AnonX_3/core/dir.py").read_text(encoding="utf-8")
 START = (ROOT / "start").read_text(encoding="utf-8")
 ENV = (ROOT / ".env").read_text(encoding="utf-8")
+SAMPLE = (ROOT / "sample.env").read_text(encoding="utf-8")
 
 
-def test_play_races_two_full_resolver_workers_and_three_micro_clients():
+def test_v4_runs_mweb_micro_first_and_preserves_legacy_fallback_workers():
     assert 'profiles.append(("audio_escape_fast", escape_opts, False))' in YOUTUBE
     assert 'resolver_slot_hint=slot_hint' in YOUTUBE
     assert '0 if idx == 0 else 1' in YOUTUBE
@@ -19,6 +20,8 @@ def test_play_races_two_full_resolver_workers_and_three_micro_clients():
     assert '"tv_downgraded", "web_safari", "android_vr"' in YOUTUBE
     assert 'direct_resolver_micro_race_started' in YOUTUBE
     assert 'fastest_valid_206=1' in YOUTUBE
+    assert 'direct_resolver_v4_micro_first' in YOUTUBE
+    assert 'full_extract_critical_lanes=0' in YOUTUBE
 
 
 def test_micro_winner_is_proven_and_vplay_can_use_adaptive_pair():
@@ -36,7 +39,7 @@ def test_audio_external_jit_has_exact_post_connect_proof():
     assert 'first_external_audio_frame_accepted' in CALLS
     assert 'connect_to_real_ms' in CALLS
     assert 'DIRECT_EXTERNAL_PREBUFFER_FRAMES", 4' in CALLS
-    assert 'DIRECT_EXTERNAL_PREBUFFER_FRAMES=4' in ENV
+    assert 'DIRECT_EXTERNAL_PREBUFFER_FRAMES=4' in SAMPLE
 
 
 def test_vplay_uses_early_placeholder_and_existing_call_swap_without_reconnect():
@@ -45,7 +48,8 @@ def test_vplay_uses_early_placeholder_and_existing_call_swap_without_reconnect()
     assert 'DIRECT_VIDEO_AUDIO_LEAD_PACKET_TIMEOUT_SEC' in CONFIG
     assert 'vplay_source_swap_before' in CALLS
     assert 'vplay_source_swap_after' in CALLS
-    assert 'direct_video_existing_call_source_swap' in CALLS
+    assert 'direct_video_background_source_swap' in CALLS
+    assert 'audio_wait_ms=0' in CALLS
     assert 'reconnect=0' in CALLS
     assert 'video_url = str(getattr(source, "video_url", "") or "") or url' in CALLS
 
@@ -74,17 +78,16 @@ def test_daily_restart_preserves_media_and_outer_watchdog_is_active():
 
 def test_release_env_contains_no_live_identity_credentials():
     values = {}
-    for raw in ENV.splitlines():
+    for raw in SAMPLE.splitlines():
         line = raw.strip()
         if not line or line.startswith('#') or '=' not in line:
             continue
         k, v = line.split('=', 1)
         values[k] = v
-    assert values['API_ID'] == '0'
+    assert values['API_ID'] == ''
     assert values['API_HASH'] == ''
     assert values['BOT_TOKEN'] == ''
-    assert values['LOGGER_ID'] == '0'
-    assert values['OWNER_ID'] == '0'
+    assert values['LOGGER_ID'] == ''
+    assert values['OWNER_ID'] == ''
     assert values['SESSION'] == ''
-    assert values['DIRECT_MICRO_PLAYER_CLIENTS'] == 'tv_downgraded,web_safari,android_vr'
-    assert values['DIRECT_AUDIO_ESCAPE_RACE'].lower() == 'true'
+    assert 'DIRECT_STARTUP_V4=True' in SAMPLE

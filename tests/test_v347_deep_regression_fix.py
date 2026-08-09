@@ -36,7 +36,7 @@ def test_vplay_cross_tier_prewarm_is_singleflight():
     assert "if self._direct_warm_tasks.get(_key) is done:" in warm
 
 
-def test_audio_full_resolver_hedge_is_not_serialized_by_dynamic_ytdlp_limit():
+def test_v4_micro_lane_owns_foreground_before_full_resolver_fallback():
     init = _block(YOUTUBE, "def __init__", "@staticmethod\n    def cookie_free_mode")
     resolver = _block(
         YOUTUBE,
@@ -45,7 +45,6 @@ def test_audio_full_resolver_hedge_is_not_serialized_by_dynamic_ytdlp_limit():
     )
     assert "_direct_foreground_resolver_semaphore" in init
     assert "DIRECT_FOREGROUND_RESOLVER_SLOTS" in CONFIG
-    assert "DIRECT_FOREGROUND_RESOLVER_SLOTS=2" in ENV
     assert "DIRECT_FOREGROUND_RESOLVER_SLOTS=2" in SAMPLE
     prestarted = _block(
         resolver,
@@ -57,6 +56,8 @@ def test_audio_full_resolver_hedge_is_not_serialized_by_dynamic_ytdlp_limit():
     assert "resolver_slot_hint=slot_hint" in prestarted
     assert "foreground_slots=%s" in resolver
     assert "dynamic_ytdlp=%s" in resolver
+    assert "if not bool(getattr(config, \"DIRECT_STARTUP_V4\", True))" in resolver
+    assert "full_extract_critical_lanes=0" in resolver
 
 
 def test_audio_and_video_fast_lanes_still_use_distinct_sticky_workers():
@@ -82,5 +83,6 @@ def test_command_layer_starts_vc_native_warm_before_play_media():
 
 def test_vplay_existing_call_swap_stays_reconnect_free():
     assert "vplay_source_swap_before" in CALLS
-    assert "direct_video_existing_call_source_swap" in CALLS
+    assert "direct_video_background_source_swap" in CALLS
+    assert "audio_wait_ms=0" in CALLS
     assert "reconnect=0" in CALLS

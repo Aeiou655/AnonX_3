@@ -786,6 +786,11 @@ class Config:
         self.DIRECT_VC_METADATA_PREWARM: bool = _bool_env(
             "DIRECT_VC_METADATA_PREWARM", True
         )
+        # V4 owns one native-call binding transaction per assistant/chat.  It
+        # removes speculative create_call/reset/retry races and keeps unmute and
+        # video attachment outside the real-audio submission critical path.
+        # Set False for an immediate rollback while a canary is being observed.
+        self.DIRECT_STARTUP_V4: bool = _bool_env("DIRECT_STARTUP_V4", True)
         self.DIRECT_VC_METADATA_TTL_SEC = max(
             5.0, float(getenv("DIRECT_VC_METADATA_TTL_SEC", "20") or 20)
         )
@@ -853,6 +858,13 @@ class Config:
         )
         self.DIRECT_EXTERNAL_JIT_RETRY_MS = max(
             5, min(50, int(getenv("DIRECT_EXTERNAL_JIT_RETRY_MS", "10") or 10))
+        )
+        self.DIRECT_EXTERNAL_REAL_FRAME_RETRY_MS = max(
+            50,
+            min(
+                200,
+                int(getenv("DIRECT_EXTERNAL_REAL_FRAME_RETRY_MS", "200") or 200),
+            ),
         )
         self.DIRECT_EXTERNAL_EARLY_CONNECT_READY_TIMEOUT_SEC = max(
             0.5, min(6.0, float(getenv("DIRECT_EXTERNAL_EARLY_CONNECT_READY_TIMEOUT_SEC", "4.0") or 4.0))
