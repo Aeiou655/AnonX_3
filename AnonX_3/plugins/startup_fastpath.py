@@ -1,126 +1,50 @@
 # Copyright (c) 2025 AnonX
 # Licensed under the MIT License.
-"""Targeted startup hotfixes for VC startup and YouTube transport compatibility."""
+"""Latency-critical VC startup fastpaths.
+
+The production <=3s path needs two properties that the stock cold path does not
+provide reliably:
+
+* a failed speculative EXTERNAL preconnect must reconnect while YouTube is still
+  resolving, not after the resolver has already consumed ~3s; and
+* once the VC connects, EXTERNAL silence must keep the native RTP clock warm
+  until the first real PCM frame arrives, otherwise NTgCalls pays another ~1s
+  clock-start tail after source readiness.
+
+The existing reconnect-free vplay EXTERNAL-audio/raw-video handoff remains in
+place.  All changes are guarded and the normal raw/local fallbacks remain.
+"""
 
 from __future__ import annotations
 
 import asyncio
-import os
 import time
 
-from ntgcalls import ConnectionError, ConnectionNotFound, MediaSource
+from ntgcalls import (
+    ConnectionError,
+    ConnectionNotFound,
+    FrameData,
+    MediaSource,
+    StreamDevice,
+)
 from pytgcalls import types
 
 from AnonX_3 import config, logger
 from AnonX_3.core.calls import TgCall
 from AnonX_3.core.resource_manager import resource_manager
-from AnonX_3.core.youtube import YouTube
 
-_PATCH_SENTINEL = "_anonx_vplay_cold_start_deep_fix_v3411"
-_YTDLP_PROXY_SENTINEL = "_anonx_ytdlp_auto_proxy_compat_bypass_v1"
+_PATCH_SENTINEL = "_anonx_vplay_cold_start_deep_fix_v3412_sub3"
+_PRECONNECT_RETRY_GUARD = "_sub3_preconnect_retry_guard"
 
 
 def _enabled(name: str, default: bool = True) -> bool:
     return bool(getattr(config, name, default))
 
 
-def _ytdlp_auto_proxy_bypass_enabled() -> bool:
-    raw = os.getenv("YTDLP_AUTO_PROXY_COMPAT_BYPASS", "true").strip().lower()
-    return raw not in {"0", "false", "no", "off", "disabled"}
-
-
-def _install_ytdlp_transport_patch() -> None:
-    """Keep auto proxy for search, but force yt-dlp itself to direct transport.
-
-    config.py intentionally exports the detected local proxy through PROXY_URL /
-    ALL_PROXY. Omitting yt-dlp's proxy option is therefore not enough: yt-dlp
-    can still inherit the environment proxy. Its documented explicit empty
-    proxy value means direct connection, so set ``proxy=''`` for Python API
-    options and ``--proxy ''`` for CLI invocations when the configured mode is
-    auto. Explicit operator proxies and YOUTUBE_PROXY=off remain untouched.
-    """
-
-    if getattr(YouTube, _YTDLP_PROXY_SENTINEL, False):
-        return
-
-    original_base_opts = YouTube._build_ytdlp_base_api_opts
-    original_cli_args = YouTube.build_ytdlp_cli_args
-
-    def _auto_mode() -> bool:
-        return (
-            _ytdlp_auto_proxy_bypass_enabled()
-            and str(getattr(config, "YOUTUBE_PROXY_MODE", "") or "").strip().lower()
-            == "auto"
-        )
-
-    def build_ytdlp_base_api_opts_direct_on_auto(self, *args, **kwargs):
-        result = original_base_opts(self, *args, **kwargs)
-        if not _auto_mode():
-            return result
-
-        try:
-            opts, js_runtime_cli, pot_provider_url = result
-            if not isinstance(opts, dict):
-                return result
-
-            detected = str(
-                opts.get("proxy")
-                or getattr(self, "_youtube_proxy", "")
-                or getattr(config, "YOUTUBE_PROXY", "")
-                or ""
-            ).strip()
-
-            # Explicit empty proxy is yt-dlp's direct-connection override. Do
-            # not merely remove the key: config.py may have exported ALL_PROXY.
-            opts["proxy"] = ""
-
-            if not getattr(self, "_ytdlp_auto_proxy_bypass_logged", False):
-                logger.warning(
-                    "youtube_ytdlp_auto_proxy_bypass proxy=%s transport=direct "
-                    "override=explicit_empty search_proxy_retained=1",
-                    detected.split("@")[-1] if detected else "auto",
-                )
-                self._ytdlp_auto_proxy_bypass_logged = True
-            return opts, js_runtime_cli, pot_provider_url
-        except Exception as ex:
-            logger.debug(
-                "youtube_ytdlp_auto_proxy_bypass skipped err=%s",
-                type(ex).__name__,
-            )
-            return result
-
-    def build_ytdlp_cli_args_direct_on_auto(self, *args, **kwargs):
-        cli = list(original_cli_args(self, *args, **kwargs))
-        if not _auto_mode() or kwargs.get("include_proxy", True) is False:
-            return cli
-
-        # The patched base options already suppress the normal truthy --proxy
-        # append. Still normalize defensively in case call signatures change.
-        cleaned: list[str] = []
-        idx = 0
-        while idx < len(cli):
-            if cli[idx] == "--proxy":
-                idx += 2
-                continue
-            cleaned.append(cli[idx])
-            idx += 1
-        cleaned.extend(["--proxy", ""])
-        return cleaned
-
-    YouTube._build_ytdlp_base_api_opts = build_ytdlp_base_api_opts_direct_on_auto
-    YouTube.build_ytdlp_cli_args = build_ytdlp_cli_args_direct_on_auto
-    setattr(YouTube, _YTDLP_PROXY_SENTINEL, True)
-    logger.info(
-        "youtube_transport_fastpath_patch enabled auto_proxy_ytdlp_bypass=%s "
-        "explicit_direct_override=1",
-        int(_ytdlp_auto_proxy_bypass_enabled()),
-    )
-
-
 async def _hard_reset_failed_binding(
     self: TgCall, client, chat_id: int, reason: str
 ) -> None:
-    """Remove a half-created NTgCalls call before a fresh direct retry."""
+    """Remove a half-created NTgCalls binding before an overlapping retry."""
 
     try:
         await client.leave_call(int(chat_id), close=False)
@@ -155,6 +79,115 @@ def _install_patch() -> None:
     original_wait_clock = TgCall._wait_direct_external_packet_clock
     original_close_external = TgCall._close_direct_external_audio
     original_play_with_slot = TgCall._play_with_startup_slot
+    original_jit_prime = TgCall._jit_prime_external_capture
+
+    async def jit_prime_external_capture(self, client, session: dict) -> None:
+        """Keep EXTERNAL silence flowing after connect until real PCM is ready.
+
+        The stock JIT helper stops the moment ``connected`` is set. Production
+        traces then show roughly a one-second outgoing-clock tail after the real
+        source is attached. Continue the same 10ms silence feed for a bounded
+        window so NTgCalls/TG keep the RTP sender hot while resolver/FFmpeg work
+        finishes. ``send_lock`` makes the handoff to the first real frame
+        atomic: the keepalive exits as soon as ``first_frame_accepted``/activated
+        becomes true.
+        """
+
+        await original_jit_prime(self, client, session)
+        if not _enabled("DIRECT_EXTERNAL_POSTCONNECT_RTP_KEEPALIVE", True):
+            return
+        if not session or session.get("closed"):
+            return
+
+        connected = session.get("connected")
+        accepted = session.get("first_frame_accepted")
+        if (
+            connected is None
+            or not connected.is_set()
+            or accepted is None
+            or accepted.is_set()
+            or session.get("activated")
+        ):
+            return
+
+        binding = getattr(client, "_binding", None)
+        send = getattr(binding, "send_external_frame", None)
+        if not callable(send):
+            return
+
+        interval = max(
+            0.005,
+            min(
+                0.030,
+                float(
+                    getattr(config, "DIRECT_EXTERNAL_RTP_KEEPALIVE_MS", 10) or 10
+                )
+                / 1000.0,
+            ),
+        )
+        max_sec = max(
+            0.50,
+            min(
+                6.0,
+                float(
+                    getattr(
+                        config,
+                        "DIRECT_EXTERNAL_POSTCONNECT_KEEPALIVE_SEC",
+                        4.5,
+                    )
+                    or 4.5
+                ),
+            ),
+        )
+        silence = bytes(max(1, int(session.get("frame_bytes") or 720)))
+        started = time.perf_counter()
+        deadline = started + max_sec
+        sent = 0
+        logger.info(
+            "direct_external_rtp_keepalive_started chat_id=%s media_id=%s "
+            "interval_ms=%s max_ms=%s",
+            session.get("chat_id"),
+            session.get("media_id"),
+            int(interval * 1000),
+            int(max_sec * 1000),
+        )
+        try:
+            while (
+                not self._shutting_down
+                and not session.get("closed")
+                and connected.is_set()
+                and not accepted.is_set()
+                and not session.get("activated")
+                and time.perf_counter() < deadline
+            ):
+                try:
+                    async with session["send_lock"]:
+                        if accepted.is_set() or session.get("activated"):
+                            break
+                        await send(
+                            int(session["chat_id"]),
+                            StreamDevice.MICROPHONE,
+                            silence,
+                            FrameData(int(time.time() * 1000), 0, 0, 0),
+                        )
+                    sent += 1
+                except asyncio.CancelledError:
+                    raise
+                except (ConnectionNotFound, ConnectionError):
+                    break
+                except Exception:
+                    pass
+                await asyncio.sleep(interval)
+        finally:
+            logger.info(
+                "direct_external_rtp_keepalive_stopped chat_id=%s media_id=%s "
+                "sent=%s elapsed_ms=%s real_audio=%s",
+                session.get("chat_id"),
+                session.get("media_id"),
+                sent,
+                int((time.perf_counter() - started) * 1000),
+                int(bool(accepted.is_set() or session.get("activated"))),
+            )
 
     def build_initial_direct_raw_stream(self, source, profile, media, *, chat_id: int):
         stream, event_path = original_build_raw(
@@ -241,6 +274,20 @@ def _install_patch() -> None:
         if (
             session
             and not session.get("closed")
+            and session.get(_PRECONNECT_RETRY_GUARD)
+        ):
+            session["sub3_preconnect_close_deferred"] = True
+            logger.info(
+                "direct_preconnect_session_close_deferred chat_id=%s media_id=%s "
+                "until=overlap_retry",
+                session.get("chat_id"),
+                session.get("media_id"),
+            )
+            return
+
+        if (
+            session
+            and not session.get("closed")
             and session.get("vplay_handoff_pending")
             and not session.get("vplay_handoff_complete")
         ):
@@ -284,6 +331,20 @@ def _install_patch() -> None:
 
         await original_close_external(self, session)
 
+    async def _cancel_jit_task(session: dict | None) -> None:
+        if not session:
+            return
+        task = session.get("jit_task")
+        if task is None or task.done():
+            return
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            pass
+
     async def play_with_startup_slot(
         self,
         client,
@@ -302,6 +363,13 @@ def _install_patch() -> None:
             and session.get("vplay_handoff_pending")
             and session.get("vplay_hybrid_stream_id") == id(stream)
         )
+        speculative_external = external_audio_session is not None
+        overlap_retry = bool(
+            speculative_external
+            and _enabled("DIRECT_PRECONNECT_OVERLAP_RETRY", True)
+        )
+        if overlap_retry and external_audio_session is not None:
+            external_audio_session[_PRECONNECT_RETRY_GUARD] = True
 
         try:
             await original_play_with_slot(
@@ -323,6 +391,50 @@ def _install_patch() -> None:
                 and _enabled("DIRECT_COLD_BINDING_RETRY", True)
             )
 
+            if speculative_external_failure and overlap_retry:
+                external_audio_session[_PRECONNECT_RETRY_GUARD] = False
+                await _cancel_jit_task(external_audio_session)
+                await _hard_reset_failed_binding(
+                    self,
+                    client,
+                    int(chat_id),
+                    f"{type(ex).__name__}:preconnect-overlap",
+                )
+                logger.info(
+                    "direct_preconnect_overlap_retry chat_id=%s media_id=%s "
+                    "reason=%s resolver_overlap=1 external_session_reused=1",
+                    chat_id,
+                    startup_media_id,
+                    type(ex).__name__,
+                )
+                try:
+                    await original_play_with_slot(
+                        self,
+                        client,
+                        chat_id=chat_id,
+                        stream=stream,
+                        unmute_mode=unmute_mode,
+                        reserved_slot=None,
+                        startup_media_id=startup_media_id,
+                        external_audio_session=external_audio_session,
+                    )
+                except BaseException:
+                    if not external_audio_session.get("closed"):
+                        await original_close_external(self, external_audio_session)
+                    raise
+                logger.info(
+                    "direct_preconnect_overlap_retry_connected chat_id=%s media_id=%s "
+                    "reconnect_on_critical_path=0",
+                    chat_id,
+                    startup_media_id,
+                )
+                return
+
+            if overlap_retry and external_audio_session is not None:
+                external_audio_session[_PRECONNECT_RETRY_GUARD] = False
+                if not external_audio_session.get("closed"):
+                    await original_close_external(self, external_audio_session)
+
             if not (speculative_external_failure or direct_retry):
                 raise
 
@@ -343,7 +455,6 @@ def _install_patch() -> None:
 
             if speculative_external_failure:
                 raise
-
             if fallback_stream is None:
                 raise
 
@@ -366,6 +477,15 @@ def _install_patch() -> None:
                 external_audio_session=None,
             )
             return
+        except BaseException:
+            if overlap_retry and external_audio_session is not None:
+                external_audio_session[_PRECONNECT_RETRY_GUARD] = False
+                if not external_audio_session.get("closed"):
+                    await original_close_external(self, external_audio_session)
+            raise
+        else:
+            if overlap_retry and external_audio_session is not None:
+                external_audio_session[_PRECONNECT_RETRY_GUARD] = False
 
         if hybrid and session is not None and not session.get("closed"):
             session["vplay_handoff_complete"] = True
@@ -381,6 +501,7 @@ def _install_patch() -> None:
                 int((time.perf_counter() - started) * 1000),
             )
 
+    TgCall._jit_prime_external_capture = jit_prime_external_capture
     TgCall._build_initial_direct_raw_stream = build_initial_direct_raw_stream
     TgCall._wait_direct_external_packet_clock = wait_direct_external_packet_clock
     TgCall._close_direct_external_audio = close_direct_external_audio
@@ -388,9 +509,9 @@ def _install_patch() -> None:
     setattr(TgCall, _PATCH_SENTINEL, True)
 
     logger.info(
-        "startup_fastpath_patch enabled vplay_hybrid_audio=1 cold_binding_retry=1"
+        "startup_fastpath_patch enabled vplay_hybrid_audio=1 cold_binding_retry=1 "
+        "preconnect_overlap_retry=1 rtp_keepalive=1"
     )
 
 
-_install_ytdlp_transport_patch()
 _install_patch()

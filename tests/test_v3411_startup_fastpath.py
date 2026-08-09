@@ -21,30 +21,31 @@ def test_vplay_keeps_external_audio_across_raw_video_source_swap():
     assert 'vplay_hybrid_external_audio_attached' in PATCH
 
 
-def test_failed_cold_preconnect_resets_native_binding_before_retry():
+def test_speculative_preconnect_retry_stays_inside_resolver_overlap():
+    assert 'DIRECT_PRECONNECT_OVERLAP_RETRY' in PATCH
+    assert 'direct_preconnect_session_close_deferred' in PATCH
+    assert 'direct_preconnect_overlap_retry' in PATCH
+    assert 'external_session_reused=1' in PATCH
+    assert 'reconnect_on_critical_path=0' in PATCH
+    assert 'reserved_slot=None' in PATCH
+    assert 'external_audio_session=external_audio_session' in PATCH
     assert 'direct_failed_binding_reset' in PATCH
-    assert 'await client.leave_call(int(chat_id), close=False)' in PATCH
-    assert 'await stop(int(chat_id))' in PATCH
-    assert 'resource_manager.unregister_stream(int(chat_id))' in PATCH
+
+
+def test_postconnect_silence_keeps_rtp_clock_hot_until_real_pcm():
+    assert 'DIRECT_EXTERNAL_POSTCONNECT_RTP_KEEPALIVE' in PATCH
+    assert 'direct_external_rtp_keepalive_started' in PATCH
+    assert 'direct_external_rtp_keepalive_stopped' in PATCH
+    assert 'StreamDevice.MICROPHONE' in PATCH
+    assert 'first_frame_accepted' in PATCH
+    assert 'session["send_lock"]' in PATCH
+    assert 'TgCall._jit_prime_external_capture = jit_prime_external_capture' in PATCH
+
+
+def test_existing_clean_raw_retry_and_cleanup_remain():
+    assert 'DIRECT_COLD_BINDING_RETRY' in PATCH
     assert 'speculative_external_failure = external_audio_session is not None' in PATCH
     assert 'external_audio_session is None' in PATCH
     assert 'direct_cold_binding_retry' in PATCH
-    assert 'reserved_slot=None' in PATCH
-
-
-def test_patch_is_guarded_and_audio_play_default_path_is_not_rebuilt():
-    assert '_anonx_vplay_cold_start_deep_fix_v3411' in PATCH
-    assert 'bool(getattr(media, "video", False))' in PATCH
-    assert 'DIRECT_VPLAY_HYBRID_AUDIO_HANDOFF' in PATCH
-    assert 'DIRECT_COLD_BINDING_RETRY' in PATCH
-
-
-def test_auto_proxy_is_explicitly_disabled_for_ytdlp_only():
-    assert '_anonx_ytdlp_auto_proxy_compat_bypass_v1' in PATCH
-    assert 'opts["proxy"] = ""' in PATCH
-    assert 'cleaned.extend(["--proxy", ""])' in PATCH
-    assert 'YOUTUBE_PROXY_MODE' in PATCH
-    assert '== "auto"' in PATCH
-    assert 'youtube_ytdlp_auto_proxy_bypass' in PATCH
-    assert 'search_proxy_retained=1' in PATCH
-    assert 'explicit_direct_override=1' in PATCH
+    assert 'await client.leave_call(int(chat_id), close=False)' in PATCH
+    assert 'resource_manager.unregister_stream(int(chat_id))' in PATCH
