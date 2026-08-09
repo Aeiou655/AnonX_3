@@ -1,0 +1,31 @@
+# secrets & local env
+.env
+.env.bak*
+.env.*
+!.env.example
+
+# runtime
+cache/
+downloads/
+*.session
+*.session-journal
+*.instance.lock
+log.txt
+*.log
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# editor / os
+.idea/
+.vscode/
+.DS_Store
+__MACOSX/
+
+# cookies (keep README)
+**/cookies/*.txt
+!**/cookies/README.md
+firefox-profile/
