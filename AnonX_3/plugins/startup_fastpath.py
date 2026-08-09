@@ -232,22 +232,15 @@ def _install_patch() -> None:
                 external_audio_session=external_audio_session,
             )
         except (ConnectionNotFound, ConnectionError) as ex:
-            connected_event = (
-                external_audio_session.get("connected")
-                if external_audio_session is not None
-                else None
-            )
-            preconnect_failed = bool(
-                external_audio_session is not None
-                and (connected_event is None or not connected_event.is_set())
-            )
+            speculative_external_failure = external_audio_session is not None
             direct_retry = bool(
-                startup_media_id
+                external_audio_session is None
+                and startup_media_id
                 and isinstance(stream, types.raw.Stream)
                 and _enabled("DIRECT_COLD_BINDING_RETRY", True)
             )
 
-            if not (preconnect_failed or direct_retry):
+            if not (speculative_external_failure or direct_retry):
                 raise
 
             if hybrid and session is not None:
@@ -261,12 +254,14 @@ def _install_patch() -> None:
                 self,
                 client,
                 int(chat_id),
-                f"{type(ex).__name__}:{'preconnect' if preconnect_failed else 'direct'}",
+                f"{type(ex).__name__}:"
+                f"{'preconnect' if speculative_external_failure else 'direct'}",
             )
 
-            if preconnect_failed:
-                # The normal direct path will see the failed/closed speculative
-                # transport and build the resolved source on a clean binding.
+            if speculative_external_failure:
+                # A speculative EXTERNAL stream is coupled to its decoder/session.
+                # Never retry that stream without the session; propagate so the
+                # normal resolved direct path can rebuild on the clean binding.
                 raise
 
             if fallback_stream is None:
