@@ -5,6 +5,24 @@
 
 Current source is authoritative; this workspace does not contain Git metadata.
 
+## Audio-First Startup V4 and Independent Cold p95 Gate (2026-08-09)
+
+- Required assistant unmute remains mandatory for audible proof but completes in
+  an owned background task; real PCM submission and RTP never await it.
+- `/vplay` keeps the EXTERNAL microphone live and attaches video in an owned,
+  cancellable post-start task. Camera attachment is not audio evidence.
+- Native call creation has one assistant/chat owner. V4 disables speculative
+  `create_call()` prewarm plus reset/settle retries that raced the real join.
+- Release requires 100 cold `/play` and 100 cold `/vplay` traces. Each command
+  independently requires command-to-ready `playback_trace total_ms` p95
+  <=4000 ms; aggregation cannot hide a failing command. Every counted trace
+  must also contain truthful `audible=` proof. `DIRECT_STARTUP_V4=False` is the
+  rollback.
+- A micro resolver miss must not be serialized ahead of yt-dlp. The micro lane
+  receives a 180 ms head start, after which exactly one authoritative extractor
+  is hedged. A winner cancels pending losers; no second full foreground lane is
+  launched under V4.
+
 ## Presentation Cannot Roll Back Playback; First yt-dlp Bootstrap Is Single-Flight (2026-08-09)
 
 - Queue/media/VC state changes are authoritative; Telegram status cards,
@@ -29,9 +47,8 @@ Current source is authoritative; this workspace does not contain Git metadata.
 - The provisional transport has one owner and one transfer. The resolved Track
   adopts its session/task/slot with `reconnect=0`; every non-adopted terminal
   path must close and release all four.
-- Production success means p95 <=1500 ms for resolver, scheduled-to-packet, and
-  command-to-first-packet, separately for at least 20 `/play` and 20 `/vplay`
-  samples. Source tests prove control flow, not external latency.
+- This historical v3.4.9 target is superseded by Audio-First Startup V4 above.
+  Source tests prove control flow, not external latency.
 
 ## Micro Clients Follow yt-dlp Authentication Policy (2026-08-09)
 
@@ -54,9 +71,8 @@ Current source is authoritative; this workspace does not contain Git metadata.
 - A full extractor is not a race winner merely because metadata extraction
   returned. Both foreground hedges continue independently through media proof,
   and the first validated full or micro source wins.
-- The release SLO is p95 of cumulative `search` -> `play_task_scheduled` over at
-  least 20 fresh uncached samples per command. Local tests cannot certify the
-  external YouTube/Telegram production latency.
+- This historical resolver-only SLO is superseded by the independent 100+100
+  command-to-ready V4 gate above. Local tests cannot certify external latency.
 
 ## Cold Initial Direct Attach Bypasses MediaStream Inspection (2026-08-08)
 

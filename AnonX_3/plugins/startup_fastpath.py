@@ -383,6 +383,8 @@ def _install_patch() -> None:
                 external_audio_session=external_audio_session,
             )
         except (ConnectionNotFound, ConnectionError) as ex:
+            if bool(getattr(config, "DIRECT_STARTUP_V4", True)):
+                raise
             speculative_external_failure = external_audio_session is not None
             direct_retry = bool(
                 external_audio_session is None

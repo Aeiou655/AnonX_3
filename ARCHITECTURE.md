@@ -3,6 +3,26 @@
 > Last updated: 2026-08-09  
 > Package: `AnonX_3` · Entry: `python -m AnonX_3`
 
+## Audio-first startup V4 (2026-08-09)
+
+Initial direct playback overlaps search/resolution, VC connection, assistant
+unmute, and FFmpeg PCM startup. One assistant/chat binding lock owns native call
+submission; metadata warming never creates a competing native call. The first
+real PCM frame is submitted immediately after connection, and outgoing-clock
+advance is measured against a baseline captured before that submission.
+
+Audible proof is `max(real-PCM-backed outgoing clock advance, confirmed unmute)`.
+For `/vplay`, the EXTERNAL microphone remains continuous while raw video is
+attached by a per-chat post-start task. Stop, skip, replacement, disconnect, and
+shutdown cancel that task through the existing post-start ownership registry.
+
+The foreground resolver starts the authenticated micro lane immediately and
+starts exactly one full authoritative hedge after 180 ms. The first source that
+passes HTTP 200/206 validation wins. This retains uncontended micro wins without
+serializing a micro miss ahead of the full extractor. Production acceptance is
+measured from command receipt through `playback_trace total_ms`; audible proof
+remains a required diagnostic milestone within every accepted trace.
+
 ## Stack
 
 - Python 3.13, kurigram/Pyrogram, PyTgCalls/ntgcalls

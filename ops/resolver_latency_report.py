@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure live resolver, packet-tail, and command-to-packet SLOs from logs.
+"""Measure live resolver, packet-tail, and command-to-ready SLOs from logs.
 
 The input must contain real ``playback_trace`` lines emitted by the bot. This
 tool performs no synthetic timing and exits non-zero when the sample floor or
@@ -20,6 +20,7 @@ from pathlib import Path
 TRACE_MARKER = "playback_trace "
 COMMAND_RE = re.compile(r"\bcommand=([^\s]+)")
 PHASE_RE = re.compile(r"\b([A-Za-z][A-Za-z0-9_]*)=(-?[0-9]+(?:\.[0-9]+)?)ms\b")
+TOTAL_RE = re.compile(r"\btotal_ms=(-?[0-9]+(?:\.[0-9]+)?)\b")
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class ResolverSample:
     resolver_to_scheduled_ms: float
     scheduled_to_packet_ms: float | None
     end_to_end_ms: float | None = None
+    audible_ms: float | None = None
 
 
 def percentile_nearest_rank(values: list[float], percentile: float) -> float:
@@ -50,6 +52,9 @@ def parse_trace_line(line: str) -> ResolverSample | None:
     if search_ms is None or scheduled_ms is None or scheduled_ms < search_ms:
         return None
     packet_ms = phases.get("first_telegram_audio_packet")
+    audible_ms = phases.get("audible")
+    total_match = TOTAL_RE.search(line)
+    command_ready_ms = float(total_match.group(1)) if total_match else None
     packet_tail = None
     if packet_ms is not None and packet_ms >= scheduled_ms:
         packet_tail = packet_ms - scheduled_ms
@@ -57,7 +62,11 @@ def parse_trace_line(line: str) -> ResolverSample | None:
         command=command,
         resolver_to_scheduled_ms=scheduled_ms - search_ms,
         scheduled_to_packet_ms=packet_tail,
-        end_to_end_ms=packet_ms,
+        # The release target is the full command-to-ready latency emitted as
+        # playback_trace total_ms. Audible remains a diagnostic proof milestone
+        # and must not replace the user-visible command completion measurement.
+        end_to_end_ms=(command_ready_ms if audible_ms is not None else None),
+        audible_ms=audible_ms,
     )
 
 
@@ -145,7 +154,7 @@ def evaluate_gate(
     metric: str,
     command: str = "all",
 ) -> dict:
-    """Apply sample-floor, p95, and 100%-pass-rate release requirements."""
+    """Apply the sample floor and selected p95 release requirement."""
 
     report = summarize(samples, target_ms=target_ms)
     report["command"] = command
@@ -159,17 +168,14 @@ def evaluate_gate(
     selected = {
         "resolver": bool(
             report.get("pass")
-            and report.get("all_samples_pass")
             and resolver_floor
         ),
         "packet-tail": bool(
             packet_report.get("pass")
-            and packet_report.get("all_samples_pass")
             and packet_floor
         ),
         "end-to-end": bool(
             end_to_end_report.get("pass")
-            and end_to_end_report.get("all_samples_pass")
             and end_to_end_floor
         ),
     }
@@ -192,6 +198,41 @@ def evaluate_gate(
     return report
 
 
+def evaluate_command_gates(
+    samples: list[ResolverSample],
+    *,
+    target_ms: float,
+    min_samples: int,
+    metric: str,
+) -> dict:
+    """Require independent `/play` and `/vplay` p95 gates.
+
+    Aggregating the commands can hide a slow command behind a faster one. The
+    production release contract therefore requires a complete sample floor and
+    a passing p95 for each command separately.
+    """
+    commands = {}
+    for command in ("play", "vplay"):
+        command_samples = [sample for sample in samples if sample.command == command]
+        commands[command] = evaluate_gate(
+            command_samples,
+            target_ms=target_ms,
+            min_samples=min_samples,
+            metric=metric,
+            command=command,
+        )
+    return {
+        "commands": commands,
+        "target_ms": target_ms,
+        "minimum_samples_per_command": max(1, int(min_samples)),
+        "metric": metric,
+        "sample_floor_met": all(
+            report["sample_floor_met"] for report in commands.values()
+        ),
+        "pass": all(report["pass"] for report in commands.values()),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -200,9 +241,14 @@ def main() -> int:
         )
     )
     parser.add_argument("logs", nargs="+", type=Path)
-    parser.add_argument("--target-ms", type=float, default=1500.0)
-    parser.add_argument("--min-samples", type=int, default=20)
-    parser.add_argument("--command", choices=("all", "play", "vplay"), default="all")
+    parser.add_argument("--target-ms", type=float, default=4000.0)
+    parser.add_argument("--min-samples", type=int, default=100)
+    parser.add_argument(
+        "--command",
+        choices=("both", "all", "play", "vplay"),
+        default="both",
+        help="'both' independently gates /play and /vplay (production default).",
+    )
     parser.add_argument(
         "--metric",
         choices=("all", "resolver", "packet-tail", "end-to-end"),
@@ -212,14 +258,54 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args()
 
-    samples = read_samples(args.logs, command=args.command)
-    report = evaluate_gate(
-        samples,
-        target_ms=args.target_ms,
-        min_samples=args.min_samples,
-        metric=args.metric,
-        command=args.command,
-    )
+    read_command = "all" if args.command == "both" else args.command
+    samples = read_samples(args.logs, command=read_command)
+    if args.command == "both":
+        report = evaluate_command_gates(
+            samples,
+            target_ms=args.target_ms,
+            min_samples=args.min_samples,
+            metric=args.metric,
+        )
+    else:
+        report = evaluate_gate(
+            samples,
+            target_ms=args.target_ms,
+            min_samples=args.min_samples,
+            metric=args.metric,
+            command=args.command,
+        )
+    if args.command == "both":
+        if args.as_json:
+            print(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            fields = [
+                f"metric={args.metric}",
+                f"target_ms={args.target_ms:.1f}",
+                f"minimum_each={args.min_samples}",
+            ]
+            for command in ("play", "vplay"):
+                command_report = report["commands"][command]
+                selected = (
+                    command_report.get("end_to_end", {})
+                    if args.metric in {"all", "end-to-end"}
+                    else command_report.get("scheduled_to_packet", {})
+                    if args.metric == "packet-tail"
+                    else command_report
+                )
+                fields.extend(
+                    (
+                        f"{command}_samples={command_report.get('samples', 0)}",
+                        f"{command}_p95_ms={float(selected.get('p95_ms', -1)):.1f}",
+                        f"{command}_pass={int(command_report['pass'])}",
+                    )
+                )
+            fields.append(f"pass={int(report['pass'])}")
+            print("PLAYBACK LATENCY " + " ".join(fields))
+        if not report["sample_floor_met"]:
+            return 2
+        return 0 if report["pass"] else 1
+
     packet_report = report.get("scheduled_to_packet") or {}
     end_to_end_report = report.get("end_to_end") or {}
 

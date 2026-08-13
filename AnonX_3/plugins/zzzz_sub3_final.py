@@ -103,9 +103,9 @@ def _apply_runtime_defaults() -> None:
     setattr(config, "DIRECT_RESOLVER_PARALLEL_MICRO", True)
     setattr(config, "DIRECT_MWEB_MICRO_PLAYER", True)
     setattr(config, "DIRECT_MICRO_PLAYER_CLIENTS", ("mweb",))
-    setattr(config, "DIRECT_MICRO_TOTAL_BUDGET_SEC", 1.30)
-    setattr(config, "DIRECT_MICRO_LANE_TIMEOUT_SEC", 1.05)
-    setattr(config, "DIRECT_MICRO_PROBE_TIMEOUT_SEC", 0.25)
+    setattr(config, "DIRECT_MICRO_TOTAL_BUDGET_SEC", 1.20)
+    setattr(config, "DIRECT_MICRO_LANE_TIMEOUT_SEC", 0.95)
+    setattr(config, "DIRECT_MICRO_PROBE_TIMEOUT_SEC", 0.20)
 
     # Exact 140 is quality promotion only, never a startup prerequisite. The
     # current bgutil sidecar is reachable but can fail BotGuard token minting,

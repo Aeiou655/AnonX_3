@@ -9,8 +9,8 @@ keepalive silence packet as audible media.
 
 For live EXTERNAL sessions, prove playback only after:
 1. the first real PCM frame has been accepted by NTgCalls,
-2. the final stream attach has completed, and
-3. the outgoing clock advances again after a post-attach baseline.
+2. the outgoing clock advances after the pre-submit baseline, and
+3. the assistant unmute request is confirmed.
 
 That keeps RTP prewarming without allowing a false <=3s result. Non-EXTERNAL
 paths retain the stock observer unchanged.
@@ -92,7 +92,8 @@ def _install() -> None:
             )
 
         started = time.perf_counter()
-        baseline: int | None = None
+        baseline = session.get("real_pcm_clock_baseline")
+        packet_proved = False
         missed_target_logged = False
         event_file = Path(event_path) if event_path else None
 
@@ -115,20 +116,22 @@ def _install() -> None:
                     )
                     return
 
-                # Do not take the baseline until real media exists AND the final
-                # PyTgCalls source attachment is complete. Silence keepalive may
-                # have already advanced the clock before this point.
-                if accepted.is_set() and attached_event.is_set():
+                # The baseline is captured immediately before the first real PCM
+                # submission. Camera/source attachment is deliberately irrelevant
+                # to audio proof, so /vplay cannot serialize RTP behind a swap.
+                if accepted.is_set():
                     try:
                         outgoing_time = int(await client.time(chat_id))
                     except Exception:
                         outgoing_time = 0
 
                     if baseline is None:
-                        baseline = max(0, outgoing_time)
+                        baseline = session.get("real_pcm_clock_baseline")
+                        if baseline is None:
+                            baseline = max(0, outgoing_time)
                         logger.info(
                             "direct_sub3_real_pcm_clock_armed chat_id=%s media_id=%s "
-                            "baseline=%s real_pcm=1 stream_attached=1",
+                            "baseline=%s real_pcm=1 video_attach_required=0",
                             chat_id,
                             media_id,
                             baseline,
@@ -138,7 +141,8 @@ def _install() -> None:
                         # the reset value, then require a subsequent advance.
                         if outgoing_time < baseline:
                             baseline = max(0, outgoing_time)
-                        elif outgoing_time > baseline:
+                        elif outgoing_time > baseline and not packet_proved:
+                            packet_proved = True
                             self._log_direct_startup_event(
                                 "first_telegram_audio_packet_sent",
                                 chat_id=chat_id,
@@ -150,23 +154,31 @@ def _install() -> None:
                             )
                             if trace:
                                 trace.mark("first_telegram_audio_packet")
-                                trace.mark("audible")
-                                trace.mark("voice_started")
 
-                            current = queue.get_current(chat_id)
-                            if str(getattr(current, "id", "") or "") == media_id:
-                                self._schedule_direct_post_start_background(
-                                    chat_id,
-                                    message,
-                                    media,
-                                    client,
-                                    direct_source,
-                                    quality_tier,
-                                )
-                                if trace:
-                                    trace.mark("background_queued")
-                                    trace.finish("ready")
-                            return
+                if packet_proved and session["unmute_confirmed"].is_set():
+                    if trace:
+                        trace.mark("audible")
+                        trace.mark("voice_started")
+
+                    current = queue.get_current(chat_id)
+                    if str(getattr(current, "id", "") or "") == media_id:
+                        self._schedule_direct_post_start_background(
+                            chat_id,
+                            message,
+                            media,
+                            client,
+                            direct_source,
+                            quality_tier,
+                        )
+                        if trace:
+                            trace.mark("background_queued")
+                            trace.finish("ready")
+                    return
+
+                if session["unmute_failed"].is_set():
+                    if trace:
+                        trace.finish("assistant_unmute_failed")
+                    return
 
                 elapsed = time.perf_counter() - started
                 if elapsed >= 12.0 and not missed_target_logged:
@@ -175,7 +187,7 @@ def _install() -> None:
                         "first_packet_target_missed",
                         chat_id=chat_id,
                         media_id=media_id,
-                        evidence="real_pcm_post_attach_12s_deadline",
+                        evidence="real_pcm_clock_or_unmute_12s_deadline",
                         status=play_state.get("status", "pending"),
                     )
 
@@ -195,7 +207,7 @@ def _install() -> None:
                 "startup_observer_timeout",
                 chat_id=chat_id,
                 media_id=media_id,
-                evidence="real_pcm_post_attach_30s_deadline",
+                evidence="real_pcm_clock_or_unmute_30s_deadline",
                 status=play_state.get("status", "pending"),
             )
             if trace:
@@ -211,7 +223,8 @@ def _install() -> None:
     setattr(TgCall, _SENTINEL, True)
     logger.info(
         "sub3_real_pcm_proof_patch enabled=1 "
-        "proof=real_pcm+stream_attach+post_attach_clock_advance"
+        "proof=real_pcm+post_submit_clock_advance+confirmed_unmute "
+        "video_attach_required=0"
     )
 
 

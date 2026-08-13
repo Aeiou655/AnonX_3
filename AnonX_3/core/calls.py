@@ -210,6 +210,7 @@ class TgCall(PyTgCalls):
         self._vc_metadata_tasks: set[asyncio.Task] = set()
         self._vc_call_ref_cache: dict[tuple[int, int], tuple[float, object]] = {}
         self._vc_native_payload_cache: dict[tuple[int, int], tuple[float, object]] = {}
+        self._vc_binding_locks: dict[tuple[int, int], asyncio.Lock] = {}
         self._direct_cache_tasks: set[asyncio.Task] = set()
         self._direct_external_audio_tasks: set[asyncio.Task] = set()
         # One live EXTERNAL/JIT capture session per chat. Unified stop and
@@ -388,7 +389,10 @@ class TgCall(PyTgCalls):
                             pytgcalls_hit = cached is not None
 
                 native_ready = False
-                if bool(getattr(config, "DIRECT_VC_NATIVE_PREWARM", True)):
+                if (
+                    not bool(getattr(config, "DIRECT_STARTUP_V4", True))
+                    and bool(getattr(config, "DIRECT_VC_NATIVE_PREWARM", True))
+                ):
                     binding = getattr(call_client, "_binding", None)
                     create_call = getattr(binding, "create_call", None)
                     calls_fn = getattr(binding, "calls", None)
@@ -908,6 +912,88 @@ class TgCall(PyTgCalls):
         )
         self._track_owned_task(task, self._vc_unmute_tasks)
 
+    async def _complete_external_required_unmute(
+        self,
+        call_client,
+        *,
+        chat_id: int,
+        media_id: str,
+        session: dict,
+        overlap_task: asyncio.Task | None,
+        slot,
+        play_started: float,
+    ) -> None:
+        """Confirm audibility without blocking real PCM/RTP submission."""
+        started = time.perf_counter()
+        overlap_unmuted = False
+        try:
+            if overlap_task is not None:
+                try:
+                    overlap_unmuted = bool(await overlap_task)
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    overlap_unmuted = False
+            unmuted = overlap_unmuted or await self._ensure_assistant_unmuted(
+                call_client, chat_id, propagate_floodwait=True
+            )
+            elapsed_ms = int((time.perf_counter() - started) * 1000)
+            if unmuted:
+                stamp = self._event_timestamp()
+                session["unmute_confirmed_ns"] = int(stamp["monotonic_ns"])
+                session["unmute_confirmed"].set()
+                self._log_direct_startup_event(
+                    "vc_unmute_confirmed",
+                    chat_id=chat_id,
+                    media_id=media_id,
+                    timestamp=stamp,
+                    evidence="background_required_unmute",
+                    status="confirmed",
+                    detail=f"unmute_ms={elapsed_ms};overlap_wait_ms=0",
+                )
+                logger.info(
+                    "vc_fast_attach timing chat_id=%s media_id=%s "
+                    "unmute_ms=%s unmute_overlap=%s overlap_wait_ms=0 "
+                    "unmute_blocked_audio_ms=0 total_background_ms=%s",
+                    chat_id,
+                    media_id,
+                    elapsed_ms,
+                    int(overlap_unmuted),
+                    int((time.perf_counter() - play_started) * 1000),
+                )
+                return
+
+            session["unmute_failed"].set()
+            session["error"] = "assistant_unmute_failed"
+            startup_gate.signal_fatal(chat_id, "assistant_unmute_failed")
+            session["vplay_handoff_pending"] = False
+            await self._close_direct_external_audio(session)
+            try:
+                await call_client.leave_call(chat_id, close=False)
+            except Exception:
+                pass
+            slot.release()
+        except asyncio.CancelledError:
+            raise
+        except Exception as ex:
+            session["unmute_failed"].set()
+            session["error"] = f"assistant_unmute_failed:{type(ex).__name__}"
+            startup_gate.signal_fatal(chat_id, session["error"])
+            session["vplay_handoff_pending"] = False
+            await self._close_direct_external_audio(session)
+            try:
+                await call_client.leave_call(chat_id, close=False)
+            except Exception:
+                pass
+            slot.release()
+            logger.warning(
+                "vc_background_required_unmute_failed chat_id=%s media_id=%s "
+                "error=%s",
+                chat_id,
+                media_id,
+                type(ex).__name__,
+            )
+
     async def _play_with_startup_slot(
         self,
         client,
@@ -974,28 +1060,36 @@ class TgCall(PyTgCalls):
                             else "mediastream_check_stream"
                         ),
                     )
-                if prepared_payload is not None:
-                    prepared_native = await self._play_with_prepared_native_payload(
-                        client, chat_id=chat_id, stream=stream, payload=prepared_payload
-                    )
+                binding_lock = self._vc_binding_locks.setdefault(
+                    self._vc_metadata_key(client, chat_id), asyncio.Lock()
+                )
+
+                async def _submit_stream() -> None:
+                    nonlocal prepared_native
+                    if prepared_payload is not None:
+                        prepared_native = await self._play_with_prepared_native_payload(
+                            client, chat_id=chat_id, stream=stream, payload=prepared_payload
+                        )
+                        if not prepared_native:
+                            binding = getattr(client, "_binding", None)
+                            stop = getattr(binding, "stop", None)
+                            if callable(stop):
+                                try:
+                                    await stop(int(chat_id))
+                                except Exception:
+                                    pass
                     if not prepared_native:
-                        # A pinned private API mismatch must not leave the local
-                        # create_call() object making public play() think the VC
-                        # is already connected. Tear down the unjoined native
-                        # object before falling back to the public API.
-                        binding = getattr(client, "_binding", None)
-                        stop = getattr(binding, "stop", None)
-                        if callable(stop):
-                            try:
-                                await stop(int(chat_id))
-                            except Exception:
-                                pass
-                if not prepared_native:
-                    await client.play(
-                        chat_id=chat_id,
-                        stream=stream,
-                        config=types.GroupCallConfig(auto_start=False),
-                    )
+                        await client.play(
+                            chat_id=chat_id,
+                            stream=stream,
+                            config=types.GroupCallConfig(auto_start=False),
+                        )
+
+                if bool(getattr(config, "DIRECT_STARTUP_V4", True)):
+                    async with binding_lock:
+                        await _submit_stream()
+                else:
+                    await _submit_stream()
                 play_ms = int((time.perf_counter() - play_started) * 1000)
                 if external_audio_session is not None:
                     connected_stamp = self._event_timestamp()
@@ -1044,7 +1138,32 @@ class TgCall(PyTgCalls):
                 )
             slot.release()
             raise
-        if unmute_mode == "required":
+        if (
+            unmute_mode == "required"
+            and external_audio_session is not None
+            and bool(getattr(config, "DIRECT_STARTUP_V4", True))
+        ):
+            task = asyncio.create_task(
+                self._complete_external_required_unmute(
+                    client,
+                    chat_id=int(chat_id),
+                    media_id=str(startup_media_id or external_audio_session.get("media_id") or ""),
+                    session=external_audio_session,
+                    overlap_task=unmute_overlap_task,
+                    slot=slot,
+                    play_started=play_started,
+                ),
+                name=f"vc-required-unmute:{chat_id}:{startup_media_id or ''}",
+            )
+            external_audio_session["unmute_task"] = task
+            self._track_owned_task(task, self._vc_unmute_tasks)
+            logger.info(
+                "vc_required_unmute_background chat_id=%s media_id=%s "
+                "overlap_wait_ms=0 unmute_blocked_audio_ms=0",
+                chat_id,
+                startup_media_id or external_audio_session.get("media_id"),
+            )
+        elif unmute_mode == "required":
             unmute_started = time.perf_counter()
             overlap_unmuted = False
             overlap_ms = -1
@@ -1705,7 +1824,13 @@ class TgCall(PyTgCalls):
         if chat_id and self._direct_external_audio_sessions.get(chat_id) is session:
             self._direct_external_audio_sessions.pop(chat_id, None)
         current = asyncio.current_task()
-        for key in ("prime_task", "jit_task", "pump_task"):
+        for key in (
+            "prime_task",
+            "jit_task",
+            "pump_task",
+            "unmute_task",
+            "vplay_close_watchdog",
+        ):
             task = session.get(key)
             if task is not None and task is not current and not task.done():
                 task.cancel()
@@ -1761,6 +1886,8 @@ class TgCall(PyTgCalls):
             "first_frame_ready": asyncio.Event(),
             "connected": asyncio.Event(),
             "first_frame_accepted": asyncio.Event(),
+            "unmute_confirmed": asyncio.Event(),
+            "unmute_failed": asyncio.Event(),
             "send_lock": asyncio.Lock(),
             "error": "",
             "closed": False,
@@ -1768,6 +1895,8 @@ class TgCall(PyTgCalls):
             "prime_ms": -1,
             "first_frame_ms": -1,
             "first_frame_accepted_ns": 0,
+            "unmute_confirmed_ns": 0,
+            "real_pcm_clock_baseline": None,
             "connected_ns": 0,
             "activated": False,
             "jit_kick_accepted": False,
@@ -2010,10 +2139,24 @@ class TgCall(PyTgCalls):
             raise RuntimeError("send_external_frame_unavailable")
         first = session["frames"][0]
         send_started = time.perf_counter()
-        retry_deadline = time.perf_counter() + 0.35
+        retry_deadline = time.perf_counter() + (
+            int(getattr(config, "DIRECT_EXTERNAL_REAL_FRAME_RETRY_MS", 200) or 200)
+            / 1000.0
+        )
         while True:
             try:
                 async with session["send_lock"]:
+                    # Serialize the clock sample and first real frame against
+                    # the JIT silence feeder. No keepalive frame can advance the
+                    # clock between this baseline and real PCM submission.
+                    if session.get("real_pcm_clock_baseline") is None:
+                        try:
+                            session["real_pcm_clock_baseline"] = max(
+                                0,
+                                int(await client.time(int(session["chat_id"]))),
+                            )
+                        except Exception:
+                            session["real_pcm_clock_baseline"] = 0
                     await send(
                         int(session["chat_id"]),
                         StreamDevice.MICROPHONE,
@@ -3789,6 +3932,9 @@ class TgCall(PyTgCalls):
         self._stream_switch_until.pop(chat_id, None)
         self._active_media_id.pop(chat_id, None)
         self._ending_media_id.pop(chat_id, None)
+        for key in tuple(self._vc_binding_locks):
+            if key[1] == int(chat_id):
+                self._vc_binding_locks.pop(key, None)
         # Autoplay memory
         self.autoplay_recent_ids.pop(chat_id, None)
         self.autoplay_recent_titles.pop(chat_id, None)
@@ -4634,68 +4780,69 @@ class TgCall(PyTgCalls):
                             if not bool(getattr(media, "video", False)):
                                 return
 
-                            # /vplay: early-connect intentionally used an
-                            # EXTERNAL audio lead. Prove its first outgoing clock
-                            # tick, then atomically replace sources with raw A/V
-                            # on the already-connected call.
-                            if early_external_session is not None:
-                                await self._wait_direct_external_packet_clock(
-                                    client,
-                                    chat_id=chat_id,
-                                    media_id=str(getattr(media, "id", "") or ""),
-                                    timeout=float(
-                                        getattr(
-                                            config,
-                                            "DIRECT_VIDEO_AUDIO_LEAD_PACKET_TIMEOUT_SEC",
-                                            0.40,
-                                        )
-                                        or 0.40
-                                    ),
-                                )
-                                await self._close_direct_external_audio(
-                                    early_external_session
-                                )
-                            swap_started = time.perf_counter()
-                            self._log_direct_startup_event(
-                                "vplay_source_swap_before",
-                                chat_id=chat_id,
-                                media_id=str(getattr(media, "id", "") or ""),
-                                evidence=(
-                                    "existing_call_raw_av"
-                                    if isinstance(direct_stream, types.raw.Stream)
-                                    else "existing_call_mediastream"
+                            # Audio is already live on the EXTERNAL microphone.
+                            # Keep that exact source running and attach only the
+                            # camera in an owned post-start task. Neither RTP nor
+                            # truthful audible proof waits for this source swap.
+                            async def _attach_vplay_video() -> None:
+                                swap_started = time.perf_counter()
+                                media_id = str(getattr(media, "id", "") or "")
+                                try:
+                                    self._log_direct_startup_event(
+                                        "vplay_source_swap_before",
+                                        chat_id=chat_id,
+                                        media_id=media_id,
+                                        evidence="external_audio_live_camera_background",
+                                        status="calling",
+                                    )
+                                    await self._play_with_startup_slot(
+                                        client,
+                                        chat_id=chat_id,
+                                        stream=direct_stream,
+                                        unmute_mode="skip",
+                                        reserved_slot=reserved_direct_slot,
+                                        startup_media_id=media_id,
+                                    )
+                                    swap_ms = int(
+                                        (time.perf_counter() - swap_started) * 1000
+                                    )
+                                    self._log_direct_startup_event(
+                                        "vplay_source_swap_after",
+                                        chat_id=chat_id,
+                                        media_id=media_id,
+                                        evidence="camera_attached_audio_continuous",
+                                        status="attached",
+                                        detail=f"swap_ms={swap_ms};audio_wait_ms=0",
+                                    )
+                                    logger.info(
+                                        "direct_video_background_source_swap chat_id=%s "
+                                        "media_id=%s raw=%s swap_ms=%s reconnect=0 "
+                                        "audio_wait_ms=0",
+                                        chat_id,
+                                        media_id,
+                                        int(isinstance(direct_stream, types.raw.Stream)),
+                                        swap_ms,
+                                    )
+                                except asyncio.CancelledError:
+                                    raise
+                                except Exception as ex:
+                                    logger.warning(
+                                        "direct_video_background_source_swap_failed "
+                                        "chat_id=%s media_id=%s error=%s "
+                                        "audio_continues=1",
+                                        chat_id,
+                                        media_id,
+                                        type(ex).__name__,
+                                    )
+
+                            video_task = asyncio.create_task(
+                                _attach_vplay_video(),
+                                name=(
+                                    f"vplay-video-attach:{chat_id}:"
+                                    f"{getattr(media, 'id', '')}"
                                 ),
-                                status="calling",
                             )
-                            await self._play_with_startup_slot(
-                                client,
-                                chat_id=chat_id,
-                                stream=direct_stream,
-                                unmute_mode="skip",
-                                reserved_slot=reserved_direct_slot,
-                                startup_media_id=str(
-                                    getattr(media, "id", "") or ""
-                                ),
-                            )
-                            swap_ms = int(
-                                (time.perf_counter() - swap_started) * 1000
-                            )
-                            self._log_direct_startup_event(
-                                "vplay_source_swap_after",
-                                chat_id=chat_id,
-                                media_id=str(getattr(media, "id", "") or ""),
-                                evidence="pytgcalls_existing_call_set_stream_sources",
-                                status="attached",
-                                detail=f"swap_ms={swap_ms}",
-                            )
-                            logger.info(
-                                "direct_video_existing_call_source_swap chat_id=%s "
-                                "media_id=%s raw=%s swap_ms=%s reconnect=0",
-                                chat_id,
-                                getattr(media, "id", None),
-                                int(isinstance(direct_stream, types.raw.Stream)),
-                                swap_ms,
-                            )
+                            self._track_post_start_task(chat_id, video_task)
                             return
 
                         if initial_parallel_direct and trace:

@@ -522,6 +522,8 @@ def _install_preconnect_settle_retry() -> None:
             )
         except (ConnectionNotFound, ConnectionError) as first_ex:
             if (
+                bool(getattr(config, "DIRECT_STARTUP_V4", True))
+                or
                 external_audio_session is None
                 or not _flag("DIRECT_SUB3_NATIVE_SETTLE_RETRY", True)
             ):

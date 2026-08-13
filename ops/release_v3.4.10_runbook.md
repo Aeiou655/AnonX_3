@@ -38,10 +38,12 @@ python -B ops/verify_release.py
 ## Performance acceptance
 
 The first-constructor gate ends as soon as one `YoutubeDL` runtime finishes
-initialization; it does not serialize extraction. Re-run the existing 20+20
-fresh `/play` and `/vplay` production gate from the v3.4.9 runbook. Resolver,
-scheduled-to-packet, and full command-to-packet p95 must each remain at or below
-1500 ms with a 100% sample pass rate.
+initialization; it does not serialize extraction. The V4 candidate supersedes
+the prior 20+20 gate. Collect at least 100 cold `/play` and 100 cold `/vplay`
+traces, then run `ops/resolver_latency_report.py --command both --metric
+end-to-end --min-samples 100 --target-ms 4000`. Both commands must independently
+have command-to-ready `playback_trace total_ms` p95 <=4000 ms and retain
+truthful audible proof. See `ops/audio_first_v4_runbook.md`.
 
 ## Rollback
 

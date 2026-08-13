@@ -4573,9 +4573,11 @@ class YouTube:
                 now + self._search_cache_ttl, metadata
             )
 
-        # Start the two fast authoritative full-resolver lanes immediately on
-        # distinct sticky workers. The tiny player-response lane races beside
-        # them rather than running serially in front of them.
+        # Legacy mode races full extractors immediately. V4 gives the mweb
+        # player-response lane a short uncontended head start, then launches
+        # exactly one authoritative hedge. Production traces showed that
+        # waiting for the complete micro budget made every micro miss serial
+        # and added enough tail to push command-to-ready beyond four seconds.
         prestarted: dict[str, asyncio.Task] = {}
         fast_race_labels: list[str] = []
         if not exact_audio140 and profiles:
@@ -4610,16 +4612,24 @@ class YouTube:
                 int((time.monotonic() - extract_started) * 1000),
             )
 
-        for idx, (profile, extract_opts, require_140) in enumerate(profiles[:2]):
-            if profile not in fast_race_labels:
-                continue
-            task = asyncio.create_task(
-                _run_prestarted_extract(
-                    profile, extract_opts, require_140, 0 if idx == 0 else 1
-                ),
-                name=f"direct-authoritative-race:{video_id}:{profile}",
+        if not bool(getattr(config, "DIRECT_STARTUP_V4", True)):
+            for idx, (profile, extract_opts, require_140) in enumerate(profiles[:2]):
+                if profile not in fast_race_labels:
+                    continue
+                task = asyncio.create_task(
+                    _run_prestarted_extract(
+                        profile, extract_opts, require_140, 0 if idx == 0 else 1
+                    ),
+                    name=f"direct-authoritative-race:{video_id}:{profile}",
+                )
+                prestarted[profile] = task
+        else:
+            logger.info(
+                "direct_resolver_v4_delayed_hedge video_id=%s video=%s "
+                "authoritative_lanes=1 fallback_serial_wait=0",
+                video_id,
+                int(bool(video)),
             )
-            prestarted[profile] = task
 
         micro_total_budget = max(
             0.50,
@@ -4976,6 +4986,49 @@ class YouTube:
                     int(micro_total_budget * 1000),
                 )
 
+        if (
+            bool(getattr(config, "DIRECT_STARTUP_V4", True))
+            and not exact_audio140
+            and profiles
+        ):
+            profile, extract_opts, require_140 = profiles[0]
+            hedge_delay = max(
+                0.05,
+                min(
+                    0.50,
+                    float(
+                        getattr(
+                            config,
+                            "DIRECT_V4_AUTHORITATIVE_HEDGE_DELAY_SEC",
+                            0.18,
+                        )
+                        or 0.18
+                    ),
+                ),
+            )
+
+            async def _run_delayed_authoritative_hedge():
+                await asyncio.sleep(hedge_delay)
+                return await _run_prestarted_extract(
+                    profile,
+                    extract_opts,
+                    require_140,
+                    0,
+                )
+
+            prestarted[profile] = asyncio.create_task(
+                _run_delayed_authoritative_hedge(),
+                name=f"direct-authoritative-delayed:{video_id}:{profile}",
+            )
+            logger.info(
+                "direct_resolver_v4_authoritative_hedge_scheduled "
+                "video_id=%s video=%s profile=%s delay_ms=%s lanes=1",
+                video_id,
+                int(bool(video)),
+                profile,
+                int(hedge_delay * 1000),
+            )
+
         # A full lane has not won until its signed URL passes the same 200/206
         # proof as a micro candidate. Validate both full hedges concurrently and
         # keep waiting for a valid micro response while those probes run. This
@@ -5013,6 +5066,8 @@ class YouTube:
                     lane = race_labels[task]
                     for loser in race_labels:
                         if loser is not task:
+                            if not loser.done():
+                                loser.cancel()
                             _keep_direct_race_task(loser)
                     if lane.startswith("micro:"):
                         logger.info(
@@ -5044,6 +5099,7 @@ class YouTube:
             # propagates immediately to the caller.
             for task in race_labels:
                 if not task.done():
+                    task.cancel()
                     _keep_direct_race_task(task)
             raise
 
